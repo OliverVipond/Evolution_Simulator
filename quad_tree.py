@@ -6,7 +6,7 @@ class QuadTree:
     MAX_OBJECTS = 10
     MAX_LEVELS = 5
 
-    def __init__(self, p_level, p_bounds):
+    def __init__(self, p_bounds, p_level=1):
         self.level = p_level
         self.objects = []
         self.bounds = p_bounds
@@ -26,10 +26,10 @@ class QuadTree:
         y = self.bounds.y
         self.nodes = []
 
-        self.nodes.append(QuadTree(self.level + 1, Rectangle(x + sub_width, y, sub_width, sub_height)))
-        self.nodes.append(QuadTree(self.level + 1, Rectangle(x, y, sub_width, sub_height)))
-        self.nodes.append(QuadTree(self.level + 1, Rectangle(x, y + sub_height, sub_width, sub_height)))
-        self.nodes.append(QuadTree(self.level + 1, Rectangle(x + sub_width, y + sub_height, sub_width, sub_height)))
+        self.nodes.append(QuadTree(Rectangle(x + sub_width, y, sub_width, sub_height), self.level + 1))
+        self.nodes.append(QuadTree(Rectangle(x, y, sub_width, sub_height), self.level + 1))
+        self.nodes.append(QuadTree(Rectangle(x, y + sub_height, sub_width, sub_height), self.level + 1))
+        self.nodes.append(QuadTree(Rectangle(x + sub_width, y + sub_height, sub_width, sub_height), self.level + 1))
 
     def get_index(self, p_rect):
         index = -1
@@ -72,10 +72,10 @@ class QuadTree:
                     else:
                         i += 1
 
-    def retrieve(self, return_objects, p_rect):
+    def retrieve(self, p_rect, return_objects=[]):
         index = self.get_index(p_rect)
         if index != -1 and len(self.nodes) != 0:
-            self.nodes[index].retrieve(return_objects, p_rect)
+            self.nodes[index].retrieve(p_rect, return_objects, )
 
         return_objects += self.objects
 
@@ -91,3 +91,6 @@ class Rectangle:
 
     def rectangle_area(self):
         return self.height * self.width
+
+    def copy(self):
+        return Rectangle(self.x, self.y, self.width, self.height)

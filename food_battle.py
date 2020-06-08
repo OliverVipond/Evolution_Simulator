@@ -1,4 +1,3 @@
-import numpy as np
 from bokeh.models import LinearColorMapper, ColorBar
 from bokeh.plotting import ColumnDataSource, curdoc, Figure
 from bokeh.driving import count
@@ -6,17 +5,8 @@ from bokeh.layouts import column, row
 
 from environment import Environment
 
-from organisms import Organisms
-from foodage import Foodage
-from quad_tree import QuadTree, Rectangle
+from quad_tree import Rectangle
 
-# Position: (x,y) \in [0,1]^2
-# Velocity: [dx/dt, dy/dt]
-# Energy: fraction of full energy 1
-
-
-e = Environment()
-print(e.current_time)
 
 # --------------------------------------------------------------------------------#
 #                                  DATA SOURCES                                  #
@@ -70,16 +60,19 @@ stat_plot = Figure(plot_width=600, plot_height=200)
 #                                  SIM INIT                                      #
 # --------------------------------------------------------------------------------#
 
-organisms = Organisms()
-organisms.add_random_blobs(10)
 
-foodage = Foodage()
-foodage.add_random_foods(30)
+environment = Environment(number_of_blobs=10, starting_food_items=30, domain=Rectangle(0, 0, 1, 1))
 
-Organism_Tree = QuadTree(0, Rectangle(0, 0, 1, 1))
+# organisms = Organisms()
+# organisms.add_random_blobs(10)
 
-for org in organisms.organism_list:
-    Organism_Tree.insert(org)
+# foodage = Foodage()
+# foodage.add_random_foods(30)
+#
+# Organism_Tree = QuadTree(0, Rectangle(0, 0, 1, 1))
+#
+# for org in organisms.organism_list:
+#     Organism_Tree.insert(org)
 
 
 # --------------------------------------------------------------------------------#
@@ -103,15 +96,15 @@ def make_food_data(foodage_class):
     }
 
 
-def consume_food(organism_quad_tree, foodage_class):
-    for food in foodage_class.food_list:
-        close_organisms = organism_quad_tree.retrieve([], food.bounding_box)
-        for organism in close_organisms:
-            if organism.radius > food.radius and \
-                    np.linalg.norm(food.position - organism.position) < organism.radius + food.radius:
-                organism.eat_food(food)
-                foodage_class.delete_food(food)
-                break
+# def consume_food(organism_quad_tree, foodage_class):
+#     for food in foodage_class.food_list:
+#         close_organisms = organism_quad_tree.retrieve([], food.bounding_box)
+#         for organism in close_organisms:
+#             if organism.radius > food.radius and \
+#                     np.linalg.norm(food.position - organism.position) < organism.radius + food.radius:
+#                 organism.eat_food(food)
+#                 foodage_class.delete_food(food)
+#                 break
 
 
 def kill_reproduce(organisms_class, t):
@@ -123,8 +116,8 @@ def kill_reproduce(organisms_class, t):
             organisms_class.kill_organism(organism)
 
 
-blobs_source.stream(make_org_data(organisms))
-food_source.stream(make_food_data(foodage))
+blobs_source.stream(make_org_data(environment.organisms))
+food_source.stream(make_food_data(environment.foodage))
 
 env_plot.circle('x', 'y', radius='radius', alpha='alpha', source=blobs_source, fill_color='green', line_color='black')
 env_plot.circle('x', 'y', radius='radius', alpha=1, source=food_source, fill_color='red', line_color='red')
@@ -149,23 +142,24 @@ curdoc().add_root(row(column(env_plot, stat_plot), scatter_plot))
 
 @count()
 def update(t):
-    organisms.update()
-    blobs_source.data = make_org_data(organisms)
-    food_source.data = make_food_data(foodage)
+    # organisms.update()
+    environment.iterate()
+    blobs_source.data = make_org_data(environment.organisms)
+    food_source.data = make_food_data(environment.foodage)
 
-    organism_tree = QuadTree(0, Rectangle(0, 0, 1, 1))
-
-    for organism in organisms.organism_list:
-        organism_tree.insert(organism)
+    # organism_tree = QuadTree(0, Rectangle(0, 0, 1, 1))
+    #
+    # for organism in organisms.organism_list:
+    #     organism_tree.insert(organism)
 
     scatter.data = {
-        'pop_radiuss': [organism.radius for organism in organisms.organism_list],
-        'pop_speeds': [organism.speed for organism in organisms.organism_list],
-        'time_of_birth': [organism.time_of_birth / (t + 1) for organism in organisms.organism_list]
+        'pop_radiuss': [organism.radius for organism in environment.organisms.organism_list],
+        'pop_speeds': [organism.speed for organism in environment.organisms.organism_list],
+        'time_of_birth': [organism.time_of_birth / (t + 1) for organism in environment.organisms.organism_list]
     }
 
-    consume_food(organism_tree, foodage)
-    kill_reproduce(organisms, t)
+    # consume_food(organism_tree, foodage)
+    # kill_reproduce(organisms, t)
 
     # tracked_food_item = foodage.food_list[0]
     #
@@ -180,15 +174,15 @@ def update(t):
     #     'y' : [org.get_y_coordinate() for org in Organism_Tree.retrieve([],tracked_food_item.bounding_box)],
     # }
 
-    if t % 100 == 0:
-        foodage.add_random_foods(1)
-        stats.stream({
-            'time': [t / 100],
-            'nbr_of_orgs': [len(organisms.organism_list)],
-            'nbr_of_food': [len(foodage.food_list)]
-        })
-
-        foodage.add_random_foods(1)
+    # if t % 100 == 0:
+    #     foodage.add_random_foods(1)
+    #     stats.stream({
+    #         'time': [t / 100],
+    #         'nbr_of_orgs': [len(organisms.organism_list)],
+    #         'nbr_of_food': [len(foodage.food_list)]
+    #     })
+    #
+    #     foodage.add_random_foods(1)
 
 
 curdoc().add_periodic_callback(update, 10)
