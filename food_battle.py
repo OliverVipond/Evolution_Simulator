@@ -143,7 +143,6 @@ curdoc().add_root(row(column(env_plot, stat_plot), scatter_plot))
 @count()
 def update(t):
     # organisms.update()
-    environment.iterate()
     blobs_source.data = make_org_data(environment.organisms)
     food_source.data = make_food_data(environment.foodage)
 
@@ -157,6 +156,8 @@ def update(t):
         'pop_speeds': [organism.speed for organism in environment.organisms.organism_list],
         'time_of_birth': [organism.time_of_birth / (t + 1) for organism in environment.organisms.organism_list]
     }
+
+    environment.iterate()
 
     # consume_food(organism_tree, foodage)
     # kill_reproduce(organisms, t)
