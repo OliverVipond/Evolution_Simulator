@@ -7,9 +7,14 @@ from quad_tree import Rectangle
 class Blob:
     MAX_SPEED = 0.05
 
+    NUMBER_OF_BLOBS = 0
+
     def __init__(self, time_of_birth=0, angle=None, speed=None, position=None, energy=None, radius=None):
 
         self.time_of_birth = time_of_birth
+        
+        self.id = Blob.NUMBER_OF_BLOBS
+        Blob.NUMBER_OF_BLOBS += 1
 
         if position is None:
             self.position = np.array(np.random.rand(2))
@@ -74,3 +79,6 @@ class Blob:
                     energy=0.5,
                     radius=max(self.radius + np.random.normal(0, 0.001), 0.000001)
                     )
+
+    def __str__(self):
+        return "<Blob #" + str(self.id) + ">"

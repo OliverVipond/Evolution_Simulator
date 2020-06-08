@@ -1,4 +1,5 @@
 from typing import List, Any
+from helpers import str_an_array
 
 
 class QuadTree:
@@ -15,9 +16,8 @@ class QuadTree:
     def clear(self):
         self.objects.clear()
         for i in range(len(self.nodes)):
-            if self.nodes[i] is None:
-                self.nodes[i].clear()
-                self.nodes[i] = None
+            self.nodes[i].clear()
+        self.nodes = []
 
     def split(self):
         sub_width = self.bounds.width / 2
@@ -72,14 +72,25 @@ class QuadTree:
                     else:
                         i += 1
 
-    def retrieve(self, p_rect, return_objects=[]):
+    def retrieve(self, p_rect, return_objects):
         index = self.get_index(p_rect)
         if index != -1 and len(self.nodes) != 0:
-            self.nodes[index].retrieve(p_rect, return_objects, )
+            self.nodes[index].retrieve(p_rect, return_objects)
 
         return_objects += self.objects
 
         return return_objects
+
+    def __str__(self):
+        if len(self.nodes) != 0:
+            node_string = "; " \
+               + str(self.nodes[0]) + "," \
+               + self.nodes[1].__str__() + "," \
+               + self.nodes[2].__str__() + "," \
+               + self.nodes[3].__str__()
+        else:
+            node_string = ""
+        return "{" + str_an_array(self.objects) + node_string + "}"
 
 
 class Rectangle:

@@ -61,23 +61,12 @@ stat_plot = Figure(plot_width=600, plot_height=200)
 # --------------------------------------------------------------------------------#
 
 
-environment = Environment(number_of_blobs=10, starting_food_items=30, domain=Rectangle(0, 0, 1, 1))
-
-# organisms = Organisms()
-# organisms.add_random_blobs(10)
-
-# foodage = Foodage()
-# foodage.add_random_foods(30)
-#
-# Organism_Tree = QuadTree(0, Rectangle(0, 0, 1, 1))
-#
-# for org in organisms.organism_list:
-#     Organism_Tree.insert(org)
-
+environment = Environment(number_of_blobs=15, starting_food_items=1, domain=Rectangle(0, 0, 1, 1))
 
 # --------------------------------------------------------------------------------#
 #                                  UPDATE                                        #
 # --------------------------------------------------------------------------------#
+
 
 def make_org_data(organisms_class):
     return {
@@ -94,17 +83,6 @@ def make_food_data(foodage_class):
         'y': [food.get_y_coordinate() for food in foodage_class.food_list],
         'radius': [food.radius for food in foodage_class.food_list]
     }
-
-
-# def consume_food(organism_quad_tree, foodage_class):
-#     for food in foodage_class.food_list:
-#         close_organisms = organism_quad_tree.retrieve([], food.bounding_box)
-#         for organism in close_organisms:
-#             if organism.radius > food.radius and \
-#                     np.linalg.norm(food.position - organism.position) < organism.radius + food.radius:
-#                 organism.eat_food(food)
-#                 foodage_class.delete_food(food)
-#                 break
 
 
 def kill_reproduce(organisms_class, t):
@@ -142,14 +120,9 @@ curdoc().add_root(row(column(env_plot, stat_plot), scatter_plot))
 
 @count()
 def update(t):
-    # organisms.update()
+    environment.iterate()
     blobs_source.data = make_org_data(environment.organisms)
     food_source.data = make_food_data(environment.foodage)
-
-    # organism_tree = QuadTree(0, Rectangle(0, 0, 1, 1))
-    #
-    # for organism in organisms.organism_list:
-    #     organism_tree.insert(organism)
 
     scatter.data = {
         'pop_radiuss': [organism.radius for organism in environment.organisms.organism_list],
@@ -157,9 +130,6 @@ def update(t):
         'time_of_birth': [organism.time_of_birth / (t + 1) for organism in environment.organisms.organism_list]
     }
 
-    environment.iterate()
-
-    # consume_food(organism_tree, foodage)
     # kill_reproduce(organisms, t)
 
     # tracked_food_item = foodage.food_list[0]
@@ -175,15 +145,13 @@ def update(t):
     #     'y' : [org.get_y_coordinate() for org in Organism_Tree.retrieve([],tracked_food_item.bounding_box)],
     # }
 
-    # if t % 100 == 0:
-    #     foodage.add_random_foods(1)
-    #     stats.stream({
-    #         'time': [t / 100],
-    #         'nbr_of_orgs': [len(organisms.organism_list)],
-    #         'nbr_of_food': [len(foodage.food_list)]
-    #     })
-    #
-    #     foodage.add_random_foods(1)
+    if t % 100 == 0:
+        environment.foodage.add_random_foods(1)
+        stats.stream({
+            'time': [t / 100],
+            'nbr_of_orgs': [len(environment.organisms.organism_list)],
+            'nbr_of_food': [len(environment.foodage.food_list)]
+        })
 
 
 curdoc().add_periodic_callback(update, 10)

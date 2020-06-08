@@ -26,4 +26,4 @@ class Organisms:
         self.organism_list.remove(organism)
 
     def find_close_organisms(self, domain: Rectangle):
-        return self.organism_quad_tree.retrieve(domain)
+        return self.organism_quad_tree.retrieve(domain, [])
