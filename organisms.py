@@ -24,6 +24,7 @@ class Organisms:
 
     def kill_organism(self, organism):
         self.organism_list.remove(organism)
+        self.organism_quad_tree.remove(organism)
 
     def find_close_organisms(self, domain: Rectangle):
         return self.organism_quad_tree.retrieve(domain, [])

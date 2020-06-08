@@ -19,7 +19,7 @@ class QuadTree:
             self.nodes[i].clear()
         self.nodes = []
 
-    def split(self):
+    def create_nodes(self):
         sub_width = self.bounds.width / 2
         sub_height = self.bounds.height / 2
         x = self.bounds.x
@@ -33,10 +33,14 @@ class QuadTree:
 
     def get_index(self, p_rect):
         index = -1
+        if not self.has_nodes():
+            return index
+
         vertical_midpoint = self.bounds.x + self.bounds.width / 2
         horizontal_midpoint = self.bounds.y + self.bounds.height / 2
         top_quadrant = (p_rect.y < horizontal_midpoint and p_rect.y + p_rect.height < horizontal_midpoint)
         bottom_quadrant = (p_rect.y > horizontal_midpoint)
+        # TODO These functions should belong to Rectangle
 
         if p_rect.x < vertical_midpoint and p_rect.x + p_rect.width < vertical_midpoint:
             if top_quadrant:
@@ -52,29 +56,46 @@ class QuadTree:
 
         return index
 
-    def insert(self, agent):
-        if len(self.nodes) != 0:
-            index = self.get_index(agent.bounding_box)
+    def remove(self, object_to_remove):
+        index = self.get_index(object_to_remove.bounding_box)
+        if index != -1:
+            self.nodes[index].remove(object_to_remove)
+        else:
+            self.objects.remove(object_to_remove)
+
+    def insert(self, new_object):
+        if self.has_nodes():
+            index = self.get_index(new_object.bounding_box)
             if index != -1:
-                self.nodes[index].insert(agent)
+                self.nodes[index].insert(new_object)
                 return
 
-        self.objects.append(agent)
+        self.objects.append(new_object)
+        self.split_if_needed()
 
-        if len(self.objects) > QuadTree.MAX_OBJECTS and self.level < QuadTree.MAX_LEVELS:
-            if len(self.nodes) == 0:
-                self.split()
-                i = 0
-                while i < len(self.objects):
-                    index = self.get_index(self.objects[i].bounding_box)
-                    if index != -1:
-                        self.nodes[index].insert(self.objects.pop(i))
-                    else:
-                        i += 1
+    def has_nodes(self):
+        return len(self.nodes) != 0
+
+    def split_if_needed(self):
+        if len(self.objects) > QuadTree.MAX_OBJECTS \
+                and self.level < QuadTree.MAX_LEVELS \
+                and not self.has_nodes():
+
+            self.create_nodes()
+            self.move_objects_to_nodes()
+
+    def move_objects_to_nodes(self):
+        i = 0
+        while i < len(self.objects):
+            index = self.get_index(self.objects[i].bounding_box)
+            if index != -1:
+                self.nodes[index].insert(self.objects.pop(i))
+            else:
+                i += 1
 
     def retrieve(self, p_rect, return_objects):
         index = self.get_index(p_rect)
-        if index != -1 and len(self.nodes) != 0:
+        if index != -1:
             self.nodes[index].retrieve(p_rect, return_objects)
 
         return_objects += self.objects
@@ -82,7 +103,7 @@ class QuadTree:
         return return_objects
 
     def __str__(self):
-        if len(self.nodes) != 0:
+        if self.has_nodes():
             node_string = "; " \
                + str(self.nodes[0]) + "," \
                + self.nodes[1].__str__() + "," \

@@ -27,3 +27,16 @@ class Environment:
         self.current_time += 1
         self.organisms.update()
         self.process_food_consumption()
+        self.process_births()
+        self.process_deaths()
+
+    def process_births(self):
+        for organism in self.organisms.organism_list:
+            if organism.energy > 1:
+                self.organisms.add_blob(organism.reproduce(birth_time=self.current_time))
+                organism.update_energy(-0.5)
+
+    def process_deaths(self):
+        for organism in self.organisms.organism_list:
+            if organism.energy < 0:
+                self.organisms.kill_organism(organism)

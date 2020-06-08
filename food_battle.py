@@ -85,15 +85,6 @@ def make_food_data(foodage_class):
     }
 
 
-def kill_reproduce(organisms_class, t):
-    for organism in organisms_class.organism_list:
-        if organism.energy > 1:
-            organisms_class.organism_list.append(organism.reproduce(birth_time=t))
-            organism.update_energy(-0.5)
-        if organism.energy < 0:
-            organisms_class.kill_organism(organism)
-
-
 blobs_source.stream(make_org_data(environment.organisms))
 food_source.stream(make_food_data(environment.foodage))
 
@@ -129,8 +120,6 @@ def update(t):
         'pop_speeds': [organism.speed for organism in environment.organisms.organism_list],
         'time_of_birth': [organism.time_of_birth / (t + 1) for organism in environment.organisms.organism_list]
     }
-
-    # kill_reproduce(organisms, t)
 
     # tracked_food_item = foodage.food_list[0]
     #
