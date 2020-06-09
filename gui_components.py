@@ -6,6 +6,7 @@ from bokeh.plotting import ColumnDataSource, Figure
 
 
 class ControlDashboard:
+
     def __init__(self, environment: Environment):
         self.environment = environment
 
@@ -32,6 +33,7 @@ class ControlDashboard:
 
 
 class EnvironmentView:
+
     def __init__(self, environment: Environment):
         self.environment = environment
 
@@ -87,8 +89,6 @@ class EnvironmentView:
 
 
 class ScatterDiagram:
-    color_mapper = LinearColorMapper(palette='Turbo256', low=0, high=1)
-    color_bar = ColorBar(color_mapper=color_mapper, location=(0, 0))
 
     def __init__(self, environment: Environment):
         self.environment = environment
@@ -100,10 +100,12 @@ class ScatterDiagram:
                                             )
         self.component = Figure(plot_width=400, plot_height=400)
 
+        self.color_mapper = LinearColorMapper(palette='Turbo256', low=0, high=1)
+        self.color_bar = ColorBar(color_mapper=self.color_mapper, location=(0, 0))
         self.component.circle('pop_radiuss', 'pop_speeds',
-                              color={'field': 'time_of_birth', 'transform': ScatterDiagram.color_mapper},
+                              color={'field': 'time_of_birth', 'transform': self.color_mapper},
                               source=self.data_source)
-        self.component.add_layout(ScatterDiagram.color_bar, 'right')
+        self.component.add_layout(self.color_bar, 'right')
 
     def refresh(self):
         self.data_source.data = {
@@ -134,10 +136,12 @@ class PopulationGraph:
         self.component.x_range.follow = "end"
         self.component.x_range.follow_interval = 100
 
+        self.snapshot_interval = 1
+
     def upload_iteration(self):
-        if self.environment.current_time % 100 == 0:
+        if self.environment.current_time % self.snapshot_interval == 0:
             self.data_source.stream({
-                'time': [self.environment.current_time / 100],
+                'time': [self.environment.current_time / self.snapshot_interval],
                 'nbr_of_orgs': [len(self.environment.organisms.organism_list)],
                 'nbr_of_food': [len(self.environment.foodage.food_list)]
             })
