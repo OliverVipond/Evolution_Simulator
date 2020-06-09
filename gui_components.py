@@ -1,8 +1,30 @@
 from environment import Environment
 from bokeh.events import ButtonClick
-from bokeh.layouts import row
+from bokeh.layouts import row, column
 from bokeh.models import Button, ColorBar, LinearColorMapper
 from bokeh.plotting import ColumnDataSource, Figure
+from statistics import Statistics
+
+
+class App:
+
+    def __init__(self, environment: Environment):
+        self.environment_view = EnvironmentView(environment)
+        self.control_dashboard = ControlDashboard(environment)
+        self.scatter_diagram = ScatterDiagram(environment)
+        self.population_graph = PopulationGraph(environment, [Statistics.number_of_foods, Statistics.number_of_blobs])
+
+        self.app = row(column(self.environment_view.get_component(),
+                              self.control_dashboard.get_component(),
+                              self.population_graph.get_component()),
+                       column(self.scatter_diagram.get_component()))
+
+    def get_app(self):
+        return self.app
+
+    def refresh(self):
+        self.environment_view.refresh()
+        self.scatter_diagram.refresh()
 
 
 class ControlDashboard:
