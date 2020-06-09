@@ -6,6 +6,7 @@ from bokeh.layouts import column, row
 from environment import Environment
 
 from quad_tree import Rectangle
+from gui_components import ControlDashboard
 
 
 # --------------------------------------------------------------------------------#
@@ -106,7 +107,9 @@ scatter_plot.circle('pop_radiuss', 'pop_speeds', color={'field': 'time_of_birth'
                     source=scatter)
 scatter_plot.add_layout(color_bar, 'right')
 
-curdoc().add_root(row(column(env_plot, stat_plot), scatter_plot))
+control_dashboard = ControlDashboard(environment)
+
+curdoc().add_root(row(column(env_plot, control_dashboard.get_buttons(), stat_plot), column(scatter_plot)))
 
 
 @count()
@@ -135,7 +138,7 @@ def update(t):
     # }
 
     if t % 100 == 0:
-        environment.foodage.add_random_foods(1)
+        environment.add_some_food(1)
         stats.stream({
             'time': [t / 100],
             'nbr_of_orgs': [len(environment.organisms.organism_list)],

@@ -40,3 +40,13 @@ class Environment:
         for organism in self.organisms.organism_list:
             if organism.energy < 0:
                 self.organisms.kill_organism(organism)
+
+    def skip_forward(self, iterations=100):
+        for i in range(iterations):
+            self.iterate()
+
+    def restart(self):
+        print("TODO: Restart")
+
+    def add_some_food(self, food_to_add=5):
+        self.foodage.add_random_foods(food_to_add)
