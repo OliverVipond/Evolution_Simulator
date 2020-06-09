@@ -1,7 +1,7 @@
 from environment import Environment
 from bokeh.events import ButtonClick
 from bokeh.layouts import row
-from bokeh.models import Button
+from bokeh.models import Button, ColorBar, LinearColorMapper
 from bokeh.plotting import ColumnDataSource, Figure
 
 
@@ -84,3 +84,63 @@ class EnvironmentView:
             'y': [food.get_y_coordinate() for food in self.environment.foodage.food_list],
             'radius': [food.radius for food in self.environment.foodage.food_list]
         }
+
+
+class ScatterDiagram:
+    color_mapper = LinearColorMapper(palette='Turbo256', low=0, high=1)
+    color_bar = ColorBar(color_mapper=color_mapper, location=(0, 0))
+
+    def __init__(self, environment: Environment):
+        self.environment = environment
+
+        self.data_source = ColumnDataSource(data=dict(pop_radiuss=[],
+                                                      pop_speeds=[],
+                                                      time_of_birth=[]
+                                                      )
+                                            )
+        self.component = Figure(plot_width=400, plot_height=400)
+
+        self.component.circle('pop_radiuss', 'pop_speeds',
+                              color={'field': 'time_of_birth', 'transform': ScatterDiagram.color_mapper},
+                              source=self.data_source)
+        self.component.add_layout(ScatterDiagram.color_bar, 'right')
+
+    def refresh(self):
+        self.data_source.data = {
+            'pop_radiuss': [organism.radius for organism in self.environment.organisms.organism_list],
+            'pop_speeds': [organism.speed for organism in self.environment.organisms.organism_list],
+            'time_of_birth': [organism.time_of_birth / (self.environment.current_time + 1) for organism in
+                              self.environment.organisms.organism_list]
+        }
+
+    def get_component(self):
+        return self.component
+
+
+class PopulationGraph:
+    def __init__(self, environment: Environment):
+        self.environment = environment
+
+        self.data_source = ColumnDataSource(data=dict(time=[],
+                                                      nbr_of_orgs=[],
+                                                      nbr_of_food=[]
+                                                      )
+                                            )
+
+        self.component = Figure(plot_width=600, plot_height=200)
+
+        self.component.line('time', 'nbr_of_orgs', source=self.data_source, line_color='green')
+        self.component.line('time', 'nbr_of_food', source=self.data_source, line_color='red')
+        self.component.x_range.follow = "end"
+        self.component.x_range.follow_interval = 100
+
+    def upload_iteration(self):
+        if self.environment.current_time % 100 == 0:
+            self.data_source.stream({
+                'time': [self.environment.current_time / 100],
+                'nbr_of_orgs': [len(self.environment.organisms.organism_list)],
+                'nbr_of_food': [len(self.environment.foodage.food_list)]
+            })
+
+    def get_component(self):
+        return self.component

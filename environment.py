@@ -1,6 +1,5 @@
 from organisms import Organisms
 from foodage import Foodage
-from quad_tree import Rectangle
 import numpy as np
 
 

@@ -17,9 +17,9 @@ class Organisms:
         self.organism_list += [blob]
         self.organism_quad_tree.insert(blob)
 
-    def add_random_blobs(self, number_of_new_blobs=1):
+    def add_random_blobs(self, number_of_new_blobs=1, current_time=0):
         for i in range(number_of_new_blobs):
-            new_blob = Blob()
+            new_blob = Blob(time_of_birth=current_time)
             self.add_blob(new_blob)
 
     def kill_organism(self, organism):
