@@ -98,14 +98,14 @@ class ScatterDiagram:
                                                       time_of_birth=[]
                                                       )
                                             )
-        self.component = Figure(plot_width=400, plot_height=400)
+        self.diagram = Figure(plot_width=400, plot_height=400)
 
         self.color_mapper = LinearColorMapper(palette='Turbo256', low=0, high=1)
         self.color_bar = ColorBar(color_mapper=self.color_mapper, location=(0, 0))
-        self.component.circle('pop_radiuss', 'pop_speeds',
-                              color={'field': 'time_of_birth', 'transform': self.color_mapper},
-                              source=self.data_source)
-        self.component.add_layout(self.color_bar, 'right')
+        self.diagram.circle('pop_radiuss', 'pop_speeds',
+                            color={'field': 'time_of_birth', 'transform': self.color_mapper},
+                            source=self.data_source)
+        self.diagram.add_layout(self.color_bar, 'right')
 
     def refresh(self):
         self.data_source.data = {
@@ -116,35 +116,75 @@ class ScatterDiagram:
         }
 
     def get_component(self):
-        return self.component
+        return self.diagram
 
 
 class PopulationGraph:
-    def __init__(self, environment: Environment):
+    def __init__(self, environment: Environment, statistics: [dict]):
         self.environment = environment
+        self.statistics = statistics
+        self.number_of_statistics = len(statistics)
 
-        self.data_source = ColumnDataSource(data=dict(time=[],
-                                                      nbr_of_orgs=[],
-                                                      nbr_of_food=[]
-                                                      )
-                                            )
+        self.data_sources = []
 
-        self.component = Figure(plot_width=600, plot_height=200)
+        # self.data_source = ColumnDataSource(data=dict(time=[],
+        #                                               nbr_of_orgs=[],
+        #                                               nbr_of_food=[]
+        #                                               )
+        #                                     )
 
-        self.component.line('time', 'nbr_of_orgs', source=self.data_source, line_color='green')
-        self.component.line('time', 'nbr_of_food', source=self.data_source, line_color='red')
-        self.component.x_range.follow = "end"
-        self.component.x_range.follow_interval = 100
+        self.graph = Figure(plot_width=600, plot_height=200)
 
-        self.snapshot_interval = 1
+        self.set_up_graph_lines()
+
+        # self.graph.line('time', 'nbr_of_orgs', source=self.data_source, line_color='green')
+        # self.graph.line('time', 'nbr_of_food', source=self.data_source, line_color='red')
+        self.graph.x_range.follow = "end"
+        self.graph.x_range.follow_interval = 100
+
+        self.snapshot_interval = 100
+
+    def set_up_graph_lines(self):
+        for i in range(self.number_of_statistics):
+            self.data_sources += [ColumnDataSource(data=dict(
+                time=[],
+                value=[]
+            ))]
+            self.graph.line('time', 'value', source=self.data_sources[i], line_color=self.statistics[i]['color'])
 
     def upload_iteration(self):
         if self.environment.current_time % self.snapshot_interval == 0:
-            self.data_source.stream({
-                'time': [self.environment.current_time / self.snapshot_interval],
-                'nbr_of_orgs': [len(self.environment.organisms.organism_list)],
-                'nbr_of_food': [len(self.environment.foodage.food_list)]
-            })
+            # self.data_source.stream({
+            #     'time': [self.environment.current_time / self.snapshot_interval],
+            #     'nbr_of_orgs': [len(self.environment.organisms.organism_list)],
+            #     'nbr_of_food': [len(self.environment.foodage.food_list)]
+            # })
+            for i in range(self.number_of_statistics):
+                self.data_sources[i].stream({
+                    'time': [self.environment.current_time / self.snapshot_interval],
+                    'value': [self.statistics[i]['function'](self.environment)]
+                })
 
     def get_component(self):
-        return self.component
+        return self.graph
+
+
+class Statistics:
+
+    @staticmethod
+    def number_of_blobs_function(environment: Environment):
+        return len(environment.organisms.organism_list)
+
+    number_of_blobs = {
+            'color': 'green',
+            'function': Statistics.number_of_blobs_function
+        }
+
+    @staticmethod
+    def number_of_foods_function(environment: Environment):
+        return len(environment.foodage.food_list)
+
+    number_of_foods = {
+            'color': 'red',
+            'function': Statistics.number_of_foods
+        }
