@@ -23,7 +23,7 @@ class ControlDashboard:
         return row(self.skip_forward_button, self.add_food_button, self.restart_button)
 
     def skip_forward_callback(self, _event: ButtonClick):
-        self.environment.skip_forward()
+        self.environment.skip_forward(300)
 
     def restart_callback(self, _event: ButtonClick):
         self.environment.restart()
@@ -120,29 +120,22 @@ class ScatterDiagram:
 
 
 class PopulationGraph:
-    def __init__(self, environment: Environment, statistics: [dict]):
+
+    def __init__(self, environment: Environment, statistics: [dict], snapshot_interval=100):
         self.environment = environment
         self.statistics = statistics
         self.number_of_statistics = len(statistics)
 
         self.data_sources = []
-
-        # self.data_source = ColumnDataSource(data=dict(time=[],
-        #                                               nbr_of_orgs=[],
-        #                                               nbr_of_food=[]
-        #                                               )
-        #                                     )
-
         self.graph = Figure(plot_width=600, plot_height=200)
-
         self.set_up_graph_lines()
 
-        # self.graph.line('time', 'nbr_of_orgs', source=self.data_source, line_color='green')
-        # self.graph.line('time', 'nbr_of_food', source=self.data_source, line_color='red')
         self.graph.x_range.follow = "end"
-        self.graph.x_range.follow_interval = 100
+        self.graph.x_range.follow_interval = 50
 
-        self.snapshot_interval = 100
+        self.snapshot_interval = snapshot_interval
+
+        self.environment.add_data_callback(self.upload_iteration)
 
     def set_up_graph_lines(self):
         for i in range(self.number_of_statistics):
@@ -154,11 +147,6 @@ class PopulationGraph:
 
     def upload_iteration(self):
         if self.environment.current_time % self.snapshot_interval == 0:
-            # self.data_source.stream({
-            #     'time': [self.environment.current_time / self.snapshot_interval],
-            #     'nbr_of_orgs': [len(self.environment.organisms.organism_list)],
-            #     'nbr_of_food': [len(self.environment.foodage.food_list)]
-            # })
             for i in range(self.number_of_statistics):
                 self.data_sources[i].stream({
                     'time': [self.environment.current_time / self.snapshot_interval],
@@ -167,24 +155,3 @@ class PopulationGraph:
 
     def get_component(self):
         return self.graph
-
-
-class Statistics:
-
-    @staticmethod
-    def number_of_blobs_function(environment: Environment):
-        return len(environment.organisms.organism_list)
-
-    number_of_blobs = {
-            'color': 'green',
-            'function': Statistics.number_of_blobs_function
-        }
-
-    @staticmethod
-    def number_of_foods_function(environment: Environment):
-        return len(environment.foodage.food_list)
-
-    number_of_foods = {
-            'color': 'red',
-            'function': Statistics.number_of_foods
-        }

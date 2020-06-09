@@ -4,6 +4,7 @@ import numpy as np
 
 
 class Environment:
+
     def __init__(self, number_of_blobs=0, starting_food_items=0):
         self.current_time = 0
 
@@ -12,6 +13,8 @@ class Environment:
 
         self.foodage = Foodage()
         self.foodage.add_random_foods(starting_food_items)
+
+        self.get_data_callbacks = []
 
     def process_food_consumption(self):
         for food in self.foodage.food_list:
@@ -28,6 +31,13 @@ class Environment:
         self.process_food_consumption()
         self.process_births()
         self.process_deaths()
+        for callback in self.get_data_callbacks:
+            callback()
+        if self.current_time % 50 == 0:
+            self.add_some_food(1)
+
+    def add_data_callback(self, callback):
+        self.get_data_callbacks += [callback]
 
     def process_births(self):
         for organism in self.organisms.organism_list:
