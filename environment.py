@@ -5,10 +5,10 @@ import numpy as np
 
 
 class Environment:
-    def __init__(self, domain: Rectangle, number_of_blobs=0, starting_food_items=0):
+    def __init__(self, number_of_blobs=0, starting_food_items=0):
         self.current_time = 0
 
-        self.organisms = Organisms(domain)
+        self.organisms = Organisms()
         self.organisms.add_random_blobs(number_of_blobs)
 
         self.foodage = Foodage()

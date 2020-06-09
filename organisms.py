@@ -3,9 +3,9 @@ from quad_tree import Rectangle, QuadTree
 
 
 class Organisms:
-    def __init__(self, domain: Rectangle):
+    def __init__(self):
         self.organism_list = []
-        self.organism_quad_tree = QuadTree(domain.copy())
+        self.organism_quad_tree = QuadTree(Rectangle(0, 0, 1, 1))
 
     def update(self):
         self.organism_quad_tree.clear()

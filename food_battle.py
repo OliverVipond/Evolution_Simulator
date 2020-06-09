@@ -5,26 +5,13 @@ from bokeh.layouts import column, row
 
 from environment import Environment
 
-from quad_tree import Rectangle
-from gui_components import ControlDashboard
+from gui_components import ControlDashboard, EnvironmentView
 
 
 # --------------------------------------------------------------------------------#
 #                                  DATA SOURCES                                  #
 # --------------------------------------------------------------------------------#
 
-blobs_source = ColumnDataSource(data=dict(x=[],
-                                          y=[],
-                                          radius=[],
-                                          alpha=[]
-                                          )
-                                )
-
-food_source = ColumnDataSource(data=dict(x=[],
-                                         y=[],
-                                         radius=[]
-                                         )
-                               )
 
 stats = ColumnDataSource(data=dict(time=[],
                                    nbr_of_orgs=[],
@@ -38,22 +25,20 @@ scatter = ColumnDataSource(data=dict(pop_radiuss=[],
                                      )
                            )
 
-reachable_org = ColumnDataSource(data=dict(x=[],
-                                           y=[]
-                                           )
-                                 )
-tracker = ColumnDataSource(data=dict(x=[],
-                                     y=[]
-                                     )
-                           )
+# reachable_org = ColumnDataSource(data=dict(x=[],
+#                                            y=[]
+#                                            )
+#                                  )
+# tracker = ColumnDataSource(data=dict(x=[],
+#                                      y=[]
+#                                      )
+#                            )
 
 # --------------------------------------------------------------------------------#
 #                                  FIGURE INIT                                   #
 # --------------------------------------------------------------------------------#
 
 scatter_plot = Figure(plot_width=400, plot_height=400)
-
-env_plot = Figure(plot_width=600, plot_height=600, x_range=(0, 1), y_range=(0, 1))
 
 stat_plot = Figure(plot_width=600, plot_height=200)
 
@@ -62,38 +47,10 @@ stat_plot = Figure(plot_width=600, plot_height=200)
 # --------------------------------------------------------------------------------#
 
 
-environment = Environment(number_of_blobs=15, starting_food_items=1, domain=Rectangle(0, 0, 1, 1))
+environment = Environment(number_of_blobs=15, starting_food_items=1)
 
-# --------------------------------------------------------------------------------#
-#                                  UPDATE                                        #
-# --------------------------------------------------------------------------------#
-
-
-def make_org_data(organisms_class):
-    return {
-        'x': [organism.get_x_coordinate() for organism in organisms_class.organism_list],
-        'y': [organism.get_y_coordinate() for organism in organisms_class.organism_list],
-        'radius': [organism.radius for organism in organisms_class.organism_list],
-        'alpha': [max(0, min(organism.energy, 1)) for organism in organisms_class.organism_list]
-    }
-
-
-def make_food_data(foodage_class):
-    return {
-        'x': [food.get_x_coordinate() for food in foodage_class.food_list],
-        'y': [food.get_y_coordinate() for food in foodage_class.food_list],
-        'radius': [food.radius for food in foodage_class.food_list]
-    }
-
-
-blobs_source.stream(make_org_data(environment.organisms))
-food_source.stream(make_food_data(environment.foodage))
-
-env_plot.circle('x', 'y', radius='radius', alpha='alpha', source=blobs_source, fill_color='green', line_color='black')
-env_plot.circle('x', 'y', radius='radius', alpha=1, source=food_source, fill_color='red', line_color='red')
-
-env_plot.circle('x', 'y', alpha=1, radius=4, source=reachable_org, fill_color='yellow', line_color='black')
-env_plot.circle('x', 'y', alpha=1, radius=4, source=tracker, fill_color='blue', line_color='blue')
+# env_plot.circle('x', 'y', alpha=1, radius=4, source=reachable_org, fill_color='yellow', line_color='black')
+# env_plot.circle('x', 'y', alpha=1, radius=4, source=tracker, fill_color='blue', line_color='blue')
 
 stat_plot.line('time', 'nbr_of_orgs', source=stats, line_color='green')
 stat_plot.line('time', 'nbr_of_food', source=stats, line_color='red')
@@ -107,16 +64,16 @@ scatter_plot.circle('pop_radiuss', 'pop_speeds', color={'field': 'time_of_birth'
                     source=scatter)
 scatter_plot.add_layout(color_bar, 'right')
 
+environment_view = EnvironmentView(environment)
 control_dashboard = ControlDashboard(environment)
 
-curdoc().add_root(row(column(env_plot, control_dashboard.get_buttons(), stat_plot), column(scatter_plot)))
+curdoc().add_root(row(column(environment_view.get_component(), control_dashboard.get_component(), stat_plot), column(scatter_plot)))
 
 
 @count()
 def update(t):
     environment.iterate()
-    blobs_source.data = make_org_data(environment.organisms)
-    food_source.data = make_food_data(environment.foodage)
+    environment_view.refresh()
 
     scatter.data = {
         'pop_radiuss': [organism.radius for organism in environment.organisms.organism_list],
