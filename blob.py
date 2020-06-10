@@ -19,7 +19,7 @@ class Blob:
 
     MUTATION_PARAMETERS = {
         "speed": 0.003,
-        "radius": 0.001
+        "radius": 0.003
     }
 
     ENERGY_ON_BIRTH = 0.5

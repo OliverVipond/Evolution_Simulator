@@ -1,6 +1,6 @@
 from environment import Environment
 from bokeh.models import RangeSlider, Slider, Tabs, Panel, Button
-from bokeh.layouts import column, row
+from bokeh.layouts import column
 from blob import Blob
 
 
@@ -34,11 +34,20 @@ class ActionCentre(Component):
     def __init__(self, environment: Environment, pause_play_control_functions: PausePlayControlFunctions):
         super().__init__()
 
+        def skip_forward():
+            fast_forward_interval = 300
+            if pause_play_control_functions.is_playing_function():
+                pause_play_control_functions.pause_function()
+                environment.skip_forward(fast_forward_interval)
+                pause_play_control_functions.play_function()
+            else:
+                environment.skip_forward(fast_forward_interval)
+
         self.buttons = column(
             ActionCentre.make_button(
                 label="Skip forward",
                 button_type="default",
-                callback=lambda: environment.skip_forward(300)
+                callback=skip_forward
             ),
             ActionCentre.make_button(
                 label="Add food",
