@@ -13,8 +13,10 @@ class Blob:
 
     ANGLE_PERTURBATION_RATE = 0.1
 
-    SPEED_MUTATION_RATE = 0.003
-    RADIUS_MUTATION_RATE = 0.001
+    MUTATION_PARAMETERS = {
+        "speed": 0.003,
+        "radius": 0.001
+    }
 
     ENERGY_ON_BIRTH = 0.5
 
@@ -98,12 +100,13 @@ class Blob:
         return self.position[1]
 
     def reproduce(self, birth_time):
+        print(Blob.MUTATION_PARAMETERS)
         return Blob(
             time_of_birth=birth_time,
-            speed=self.speed + np.random.normal(0, Blob.SPEED_MUTATION_RATE),
+            speed=self.speed + np.random.normal(0, Blob.MUTATION_PARAMETERS["speed"]),
             position=self.position.copy(),
             energy=Blob.ENERGY_ON_BIRTH,
-            radius=self.radius + np.random.normal(0, Blob.RADIUS_MUTATION_RATE)
+            radius=self.radius + np.random.normal(0, Blob.MUTATION_PARAMETERS["radius"])
         )
 
     def curb_speed(self):
