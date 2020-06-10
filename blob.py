@@ -100,7 +100,6 @@ class Blob:
         return self.position[1]
 
     def reproduce(self, birth_time):
-        print(Blob.MUTATION_PARAMETERS)
         return Blob(
             time_of_birth=birth_time,
             speed=self.speed + np.random.normal(0, Blob.MUTATION_PARAMETERS["speed"]),

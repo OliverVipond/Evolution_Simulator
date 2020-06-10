@@ -1,14 +1,67 @@
 from environment import Environment
-from bokeh.models import RangeSlider, Slider
-from bokeh.layouts import row, column
+from bokeh.models import RangeSlider, Slider, Tabs, Panel, Button
+from bokeh.layouts import column, row
 from blob import Blob
 
 
-class Controllers:
+class Component:
+    def __init__(self):
+        self.component = None
+
+    def get_component(self):
+        return self.component
+
+
+class ControlPanel(Component):
 
     def __init__(self, environment: Environment):
+        super().__init__()
+        self.component = Tabs(tabs=[
+            ActionCentre(environment).get_component(),
+            MutationParameterControls().get_component()
+        ])
+
+
+class ActionCentre(Component):
+    def __init__(self, environment: Environment):
+        super().__init__()
         self.environment = environment
-        self.component = column(
+
+        self.buttons = row(
+            ActionCentre.make_button(
+                label="Skip forward",
+                button_type="default",
+                callback=lambda: self.environment.skip_forward(300)
+            ),
+            ActionCentre.make_button(
+                label="Add food",
+                button_type="primary",
+                callback=self.environment.add_some_food
+            ),
+            ActionCentre.make_button(
+                label="Restart",
+                button_type="danger",
+                callback=self.environment.restart
+            )
+        )
+
+        self.component = Panel(
+            child=self.buttons,
+            title="Action Centre"
+        )
+
+    @staticmethod
+    def make_button(label: "", button_type: "", callback):
+        button = Button(label=label, button_type=button_type)
+        button.on_click(lambda _event: callback())
+        return button
+
+
+class MutationParameterControls(Component):
+
+    def __init__(self):
+        super().__init__()
+        self.controls = column(
             MutationParameterSlider(
                 parameters=Blob.MUTATION_PARAMETERS,
                 key="speed",
@@ -16,11 +69,20 @@ class Controllers:
                 max_value=0.01,
                 step=0.0001,
                 label="Speed mutation"
+            ).get_component(),
+            MutationParameterSlider(
+                parameters=Blob.MUTATION_PARAMETERS,
+                key="radius",
+                min_value=0,
+                max_value=0.03,
+                step=0.0001,
+                label="Radius mutation"
             ).get_component()
         )
-
-    def get_component(self):
-        return self.component
+        self.component = Panel(
+            child=self.controls,
+            title="Mutation Parameters"
+        )
 
 
 class SpeedExtremeSlider:

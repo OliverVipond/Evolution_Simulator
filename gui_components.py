@@ -1,32 +1,30 @@
 from environment import Environment
-from bokeh.events import ButtonClick
 from bokeh.layouts import row, column
-from bokeh.models import Button, ColorBar, LinearColorMapper
+from bokeh.models import ColorBar, LinearColorMapper
 from bokeh.plotting import ColumnDataSource, Figure
 from statistics import Statistics
-from controls import SpeedExtremeSlider, Controllers
+from controls import SpeedExtremeSlider, ControlPanel
 
 
 class App:
 
     def __init__(self, environment: Environment):
         self.environment_view = EnvironmentView(environment)
-        self.control_dashboard = ControlDashboard(environment)
         self.scatter_diagram = ScatterDiagram(environment)
         self.population_graph = PopulationGraph(environment, [Statistics.number_of_foods, Statistics.number_of_blobs])
         self.speed_extrema_slider = SpeedExtremeSlider(environment)
-        self.controllers = Controllers(environment)
+
+        self.control_panel = ControlPanel(environment)
 
         self.app = row(
             column(
                 self.environment_view.get_component(),
-                self.control_dashboard.get_component(),
                 self.population_graph.get_component()
             ),
             column(
                 self.scatter_diagram.get_component(),
                 self.speed_extrema_slider.get_component(),
-                self.controllers.get_component()
+                self.control_panel.get_component()
             )
         )
 
@@ -36,33 +34,6 @@ class App:
     def refresh(self):
         self.environment_view.refresh()
         self.scatter_diagram.refresh()
-
-
-class ControlDashboard:
-
-    def __init__(self, environment: Environment):
-        self.environment = environment
-
-        self.skip_forward_button = Button(label="Skip forward", button_type="default")
-        self.skip_forward_button.on_click(self.skip_forward_callback)
-
-        self.add_food_button = Button(label="Add food", button_type="primary")
-        self.add_food_button.on_click(self.add_food_callback)
-
-        self.restart_button = Button(label="Restart", button_type="danger")
-        self.restart_button.on_click(self.restart_callback)
-
-    def get_component(self):
-        return row(self.skip_forward_button, self.add_food_button, self.restart_button)
-
-    def skip_forward_callback(self, _event: ButtonClick):
-        self.environment.skip_forward(300)
-
-    def restart_callback(self, _event: ButtonClick):
-        self.environment.restart()
-
-    def add_food_callback(self, _event: ButtonClick):
-        self.environment.add_some_food()
 
 
 class EnvironmentView:
