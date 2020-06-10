@@ -3,7 +3,7 @@ from bokeh.layouts import row, column
 from bokeh.models import ColorBar, LinearColorMapper
 from bokeh.plotting import ColumnDataSource, Figure
 from statistics import Statistics
-from controls import ControlPanel
+from controls import ControlPanel, PausePlayControlFunctions
 from bokeh.plotting import curdoc
 
 
@@ -13,6 +13,8 @@ class App:
         self.environment = environment
         self.environment_view = EnvironmentView(environment)
         self.scatter_diagram = ScatterDiagram(environment)
+
+        self.play_periodic_callback = None
 
         self.app = row(
             column(
@@ -24,10 +26,13 @@ class App:
             ),
             column(
                 self.scatter_diagram.get_component(),
-                ControlPanel(environment, self.pause, self.play).get_component()
+                ControlPanel(environment, PausePlayControlFunctions(
+                    play_function=self.play,
+                    pause_function=self.pause,
+                    is_playing_function=lambda: not (self.play_periodic_callback is None)
+                )).get_component()
             )
         )
-        self.play_periodic_callback = None
 
     def get_app(self):
         return self.app
@@ -37,11 +42,12 @@ class App:
         self.scatter_diagram.refresh()
 
     def play(self):
-        def callback():
-            self.environment.iterate()
-            self.refresh()
+        if self.play_periodic_callback is None:
+            def callback():
+                self.environment.iterate()
+                self.refresh()
 
-        self.play_periodic_callback = curdoc().add_periodic_callback(callback, 10)
+            self.play_periodic_callback = curdoc().add_periodic_callback(callback, 10)
 
     def pause(self):
         if self.play_periodic_callback is None:

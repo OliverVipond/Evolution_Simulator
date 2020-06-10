@@ -12,19 +12,26 @@ class Component:
         return self.component
 
 
+class PausePlayControlFunctions:
+    def __init__(self, pause_function, play_function, is_playing_function):
+        self.pause_function = pause_function
+        self.play_function = play_function
+        self.is_playing_function = is_playing_function
+
+
 class ControlPanel(Component):
 
-    def __init__(self, environment: Environment, pause_callback, play_callback):
+    def __init__(self, environment: Environment, pause_play_control_functions: PausePlayControlFunctions):
         super().__init__()
         self.component = Tabs(tabs=[
-            ActionCentre(environment, pause_callback, play_callback).get_component(),
+            ActionCentre(environment, pause_play_control_functions).get_component(),
             MutationParameterControls().get_component(),
             ExtremaControls(environment).get_component()
         ])
 
 
 class ActionCentre(Component):
-    def __init__(self, environment: Environment, pause_callback, play_callback):
+    def __init__(self, environment: Environment, pause_play_control_functions: PausePlayControlFunctions):
         super().__init__()
 
         self.buttons = column(
@@ -43,16 +50,7 @@ class ActionCentre(Component):
                 button_type="danger",
                 callback=environment.restart
             ),
-            ActionCentre.make_button(
-                label="Pause",
-                button_type="primary",
-                callback=pause_callback
-            ),
-            ActionCentre.make_button(
-                label="Play",
-                button_type="primary",
-                callback=play_callback
-            )
+            ActionCentre.make_pause_play_button(pause_play_control_functions)
         )
 
         self.component = Panel(
@@ -64,6 +62,23 @@ class ActionCentre(Component):
     def make_button(label: "", button_type: "", callback):
         button = Button(label=label, button_type=button_type)
         button.on_click(lambda _event: callback())
+        return button
+
+    @staticmethod
+    def make_pause_play_button(pause_play_control_functions: PausePlayControlFunctions):
+        button = Button(label="Pause", button_type="default")
+
+        def toggle_pause_play():
+            if pause_play_control_functions.is_playing_function():
+                pause_play_control_functions.pause_function()
+                button.button_type = "primary"
+                button.label = "Play"
+            else:
+                pause_play_control_functions.play_function()
+                button.button_type = "default"
+                button.label = "Pause"
+
+        button.on_click(lambda _event: toggle_pause_play())
         return button
 
 
