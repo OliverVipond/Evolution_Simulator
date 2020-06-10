@@ -4,6 +4,7 @@ from bokeh.layouts import row, column
 from bokeh.models import Button, ColorBar, LinearColorMapper
 from bokeh.plotting import ColumnDataSource, Figure
 from statistics import Statistics
+from controls import SpeedExtremeSlider
 
 
 class App:
@@ -13,11 +14,13 @@ class App:
         self.control_dashboard = ControlDashboard(environment)
         self.scatter_diagram = ScatterDiagram(environment)
         self.population_graph = PopulationGraph(environment, [Statistics.number_of_foods, Statistics.number_of_blobs])
+        self.speed_extrema_slider = SpeedExtremeSlider(environment)
 
         self.app = row(column(self.environment_view.get_component(),
                               self.control_dashboard.get_component(),
                               self.population_graph.get_component()),
-                       column(self.scatter_diagram.get_component()))
+                       column(self.scatter_diagram.get_component(),
+                              self.speed_extrema_slider.get_component()))
 
     def get_app(self):
         return self.app

@@ -28,3 +28,8 @@ class Organisms:
 
     def find_close_organisms(self, domain: Rectangle):
         return self.organism_quad_tree.retrieve(domain, [])
+
+    def update_bound_speed_of_organisms(self, minimum_speed, maximum_speed):
+        Blob.change_speed_extrema(minimum=minimum_speed, maximum=maximum_speed)
+        for organism in self.organism_list:
+            organism.curb_speed()

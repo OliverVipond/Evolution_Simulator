@@ -43,7 +43,7 @@ class Environment:
         for organism in self.organisms.organism_list:
             if organism.energy > 1:
                 self.organisms.add_blob(organism.reproduce(birth_time=self.current_time))
-                organism.update_energy(-0.5)
+                organism.change_energy(-0.5)
 
     def process_deaths(self):
         for organism in self.organisms.organism_list:

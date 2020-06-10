@@ -6,6 +6,7 @@ from quad_tree import Rectangle
 
 class Blob:
     MAX_SPEED = 0.05
+    MIN_SPEED = 0.000001
 
     NUMBER_OF_BLOBS = 0
 
@@ -27,9 +28,9 @@ class Blob:
             self.angle = angle
 
         if speed is None:
-            self.speed = random() * Blob.MAX_SPEED
+            self.speed = Blob.MIN_SPEED + random() * (Blob.MAX_SPEED - Blob.MIN_SPEED)
         else:
-            self.speed = speed
+            self.speed = min(Blob.MAX_SPEED, max(speed, Blob.MIN_SPEED))
 
         if energy is None:
             self.energy = 0.5
@@ -56,7 +57,7 @@ class Blob:
     def perturb_angle(self):
         self.angle += np.random.normal(0, 0.1)
 
-    def update_energy(self, delta):
+    def change_energy(self, delta):
         self.energy += delta
 
     def eat_food(self, food):
@@ -65,7 +66,7 @@ class Blob:
     def update(self):
         self.update_position()
         self.perturb_angle()
-        self.update_energy(-self.speed * self.speed * self.radius * self.radius * 500)
+        self.change_energy(-self.speed * self.speed * self.radius * self.radius * 500)
 
     def get_x_coordinate(self):
         return self.position[0]
@@ -74,11 +75,22 @@ class Blob:
         return self.position[1]
 
     def reproduce(self, birth_time):
-        return Blob(time_of_birth=birth_time, speed=max(self.speed + np.random.normal(0, 0.003), 0.000001),
+        return Blob(time_of_birth=birth_time, speed=self.speed + np.random.normal(0, 0.003),
                     position=self.position.copy(),
                     energy=0.5,
                     radius=max(self.radius + np.random.normal(0, 0.001), 0.000001)
                     )
 
+    def curb_speed(self):
+        self.speed = min(Blob.MAX_SPEED, max(self.speed, Blob.MIN_SPEED))
+
     def __str__(self):
         return "<Blob #" + str(self.id) + ">"
+
+    @staticmethod
+    def change_speed_extrema(minimum, maximum):
+        if maximum >= minimum >= 0:
+            Blob.MAX_SPEED = maximum
+            Blob.MIN_SPEED = minimum
+        else:
+            raise Exception("Maximum speed smaller than minimum speed")
