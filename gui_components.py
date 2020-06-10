@@ -4,11 +4,13 @@ from bokeh.models import ColorBar, LinearColorMapper
 from bokeh.plotting import ColumnDataSource, Figure
 from statistics import Statistics
 from controls import ControlPanel
+from bokeh.plotting import curdoc
 
 
 class App:
 
     def __init__(self, environment: Environment):
+        self.environment = environment
         self.environment_view = EnvironmentView(environment)
         self.scatter_diagram = ScatterDiagram(environment)
 
@@ -22,9 +24,10 @@ class App:
             ),
             column(
                 self.scatter_diagram.get_component(),
-                ControlPanel(environment).get_component()
+                ControlPanel(environment, self.pause, self.play).get_component()
             )
         )
+        self.play_periodic_callback = None
 
     def get_app(self):
         return self.app
@@ -32,6 +35,19 @@ class App:
     def refresh(self):
         self.environment_view.refresh()
         self.scatter_diagram.refresh()
+
+    def play(self):
+        def callback():
+            self.environment.iterate()
+            self.refresh()
+
+        self.play_periodic_callback = curdoc().add_periodic_callback(callback, 10)
+
+    def pause(self):
+        if self.play_periodic_callback is None:
+            return
+        curdoc().remove_periodic_callback(self.play_periodic_callback)
+        self.play_periodic_callback = None
 
 
 class EnvironmentView:

@@ -14,35 +14,44 @@ class Component:
 
 class ControlPanel(Component):
 
-    def __init__(self, environment: Environment):
+    def __init__(self, environment: Environment, pause_callback, play_callback):
         super().__init__()
         self.component = Tabs(tabs=[
-            ActionCentre(environment).get_component(),
+            ActionCentre(environment, pause_callback, play_callback).get_component(),
             MutationParameterControls().get_component(),
             ExtremaControls(environment).get_component()
         ])
 
 
 class ActionCentre(Component):
-    def __init__(self, environment: Environment):
+    def __init__(self, environment: Environment, pause_callback, play_callback):
         super().__init__()
-        self.environment = environment
 
-        self.buttons = row(
+        self.buttons = column(
             ActionCentre.make_button(
                 label="Skip forward",
                 button_type="default",
-                callback=lambda: self.environment.skip_forward(300)
+                callback=lambda: environment.skip_forward(300)
             ),
             ActionCentre.make_button(
                 label="Add food",
                 button_type="primary",
-                callback=self.environment.add_some_food
+                callback=environment.add_some_food
             ),
             ActionCentre.make_button(
                 label="Restart",
                 button_type="danger",
-                callback=self.environment.restart
+                callback=environment.restart
+            ),
+            ActionCentre.make_button(
+                label="Pause",
+                button_type="primary",
+                callback=pause_callback
+            ),
+            ActionCentre.make_button(
+                label="Play",
+                button_type="primary",
+                callback=play_callback
             )
         )
 
