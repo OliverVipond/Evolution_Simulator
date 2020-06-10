@@ -62,27 +62,43 @@ class MutationParameterControls(Component):
     def __init__(self):
         super().__init__()
         self.controls = column(
-            MutationParameterSlider(
+            MutationParameterControls.make_parameter_slider(
                 parameters=Blob.MUTATION_PARAMETERS,
                 key="speed",
                 min_value=0,
                 max_value=0.01,
                 step=0.0001,
                 label="Speed mutation"
-            ).get_component(),
-            MutationParameterSlider(
+            ),
+            MutationParameterControls.make_parameter_slider(
                 parameters=Blob.MUTATION_PARAMETERS,
                 key="radius",
                 min_value=0,
                 max_value=0.03,
                 step=0.0001,
                 label="Radius mutation"
-            ).get_component()
+            )
         )
         self.component = Panel(
             child=self.controls,
             title="Mutation Parameters"
         )
+
+    @staticmethod
+    def make_parameter_slider(parameters, key, min_value, max_value, step, label):
+        slider = Slider(
+            start=min_value,
+            end=max_value,
+            value=parameters[key],
+            step=step,
+            title=label
+        )
+
+        def change_parameter_callback(new_value):
+            parameters[key] = new_value
+
+        slider.on_change("value", lambda _attr, _old, new: change_parameter_callback(new))
+        return slider
 
 
 class SpeedExtremeSlider:
@@ -100,24 +116,3 @@ class SpeedExtremeSlider:
             minimum_speed=new[0],
             maximum_speed=new[1]
         )
-
-
-class MutationParameterSlider:
-
-    def __init__(self, parameters, key, min_value, max_value, step, label):
-        self.slider = Slider(
-            start=min_value,
-            end=max_value,
-            value=parameters[key],
-            step=step,
-            title=label
-        )
-        self.parameters = parameters
-        self.key = key
-        self.slider.on_change("value", self.update_parameter_callback)
-
-    def update_parameter_callback(self, _attr, _old, new):
-        self.parameters[self.key] = new
-
-    def get_component(self):
-        return self.slider
