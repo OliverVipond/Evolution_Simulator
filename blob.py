@@ -5,11 +5,15 @@ from quad_tree import Rectangle
 
 
 class Blob:
-    MAX_SPEED = 0.05
-    MIN_SPEED = 0.000001
-
-    MAX_RADIUS = 0.1
-    MIN_RADIUS = 0.000001
+    
+    SPEED_EXTREMA = {
+        "maximum": 0.05,
+        "minimum": 0.000001
+    }
+    RADIUS_EXTREMA = {
+        "maximum": 0.1,
+        "minimum": 0.000001
+    }
 
     ANGLE_PERTURBATION_RATE = 0.1
 
@@ -42,9 +46,10 @@ class Blob:
             self.angle = angle
 
         if speed is None:
-            self.speed = Blob.MIN_SPEED + random() * (Blob.MAX_SPEED - Blob.MIN_SPEED)
+            self.speed = Blob.SPEED_EXTREMA["minimum"] + \
+                         random() * (Blob.SPEED_EXTREMA["maximum"] - Blob.SPEED_EXTREMA["minimum"])
         else:
-            self.speed = min(Blob.MAX_SPEED, max(speed, Blob.MIN_SPEED))
+            self.speed = min(Blob.SPEED_EXTREMA["maximum"], max(speed, Blob.SPEED_EXTREMA["minimum"]))
 
         if energy is None:
             self.energy = Blob.ENERGY_ON_BIRTH
@@ -52,9 +57,10 @@ class Blob:
             self.energy = energy
 
         if radius is None:
-            self.radius = Blob.MIN_RADIUS + random() * (Blob.MAX_RADIUS - Blob.MIN_RADIUS)
+            self.radius = Blob.RADIUS_EXTREMA["minimum"] + \
+                          random() * (Blob.RADIUS_EXTREMA["maximum"] - Blob.RADIUS_EXTREMA["minimum"])
         else:
-            self.radius = min(Blob.MAX_RADIUS, max(radius, Blob.MIN_RADIUS))
+            self.radius = min(Blob.RADIUS_EXTREMA["maximum"], max(radius, Blob.RADIUS_EXTREMA["minimum"]))
 
         self.bounding_box = Rectangle(
             x=self.position[0] - self.radius,
@@ -108,8 +114,9 @@ class Blob:
             radius=self.radius + np.random.normal(0, Blob.MUTATION_PARAMETERS["radius"])
         )
 
-    def curb_speed(self):
-        self.speed = min(Blob.MAX_SPEED, max(self.speed, Blob.MIN_SPEED))
+    def restrict_to_extrema(self):
+        self.speed = min(Blob.SPEED_EXTREMA["maximum"], max(self.speed, Blob.SPEED_EXTREMA["minimum"]))
+        self.radius = min(Blob.RADIUS_EXTREMA["maximum"], max(self.radius, Blob.RADIUS_EXTREMA["minimum"]))
 
     def __str__(self):
         return "<Blob #" + str(self.id) + ">"
@@ -117,7 +124,7 @@ class Blob:
     @staticmethod
     def change_speed_extrema(minimum, maximum):
         if maximum >= minimum >= 0:
-            Blob.MAX_SPEED = maximum
-            Blob.MIN_SPEED = minimum
+            Blob.SPEED_EXTREMA["maximum"] = maximum
+            Blob.SPEED_EXTREMA["minimum"] = minimum
         else:
             raise Exception("Maximum speed smaller than minimum speed")

@@ -18,7 +18,8 @@ class ControlPanel(Component):
         super().__init__()
         self.component = Tabs(tabs=[
             ActionCentre(environment).get_component(),
-            MutationParameterControls().get_component()
+            MutationParameterControls().get_component(),
+            ExtremaControls(environment).get_component()
         ])
 
 
@@ -101,18 +102,49 @@ class MutationParameterControls(Component):
         return slider
 
 
-class SpeedExtremeSlider:
+class ExtremaControls(Component):
 
     def __init__(self, environment: Environment):
-        self.range_slider = RangeSlider(start=0, end=0.5, value=(0, 0.8), step=.0001, title="Blob speed")
+        super().__init__()
         self.environment = environment
-        self.range_slider.on_change("value", self.update_speed_extrema_callback)
-
-    def get_component(self):
-        return self.range_slider
-
-    def update_speed_extrema_callback(self, _attr, _old, new):
-        self.environment.organisms.update_bound_speed_of_organisms(
-            minimum_speed=new[0],
-            maximum_speed=new[1]
+        self.controls = column(
+            ExtremaControls.make_extrema_slider(
+                absolute_min=0,
+                absolute_max=0.5,
+                extrema_values=Blob.SPEED_EXTREMA,
+                step=.0001,
+                label="Blob speed",
+                environment_callback=environment.organisms.update_extrema_of_organisms
+            ),
+            ExtremaControls.make_extrema_slider(
+                absolute_min=0,
+                absolute_max=0.5,
+                extrema_values=Blob.RADIUS_EXTREMA,
+                step=.0001,
+                label="Blob radius",
+                environment_callback=environment.organisms.update_extrema_of_organisms
+            )
         )
+
+        self.component = Panel(
+            child=self.controls,
+            title="Extrema"
+        )
+
+    @staticmethod
+    def make_extrema_slider(absolute_min, absolute_max, extrema_values, step, label, environment_callback):
+        slider = RangeSlider(
+            start=absolute_min,
+            end=absolute_max,
+            value=(extrema_values["minimum"], extrema_values["maximum"]),
+            step=step,
+            title=label
+        )
+
+        def update_extrema_callback(new_min, new_max):
+            extrema_values["minimum"] = new_min
+            extrema_values["maximum"] = new_max
+            environment_callback()
+
+        slider.on_change("value", lambda _attr, _old, new_value: update_extrema_callback(new_value[0], new_value[1]))
+        return slider

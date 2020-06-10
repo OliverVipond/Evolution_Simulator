@@ -3,7 +3,7 @@ from bokeh.layouts import row, column
 from bokeh.models import ColorBar, LinearColorMapper
 from bokeh.plotting import ColumnDataSource, Figure
 from statistics import Statistics
-from controls import SpeedExtremeSlider, ControlPanel
+from controls import ControlPanel
 
 
 class App:
@@ -11,20 +11,18 @@ class App:
     def __init__(self, environment: Environment):
         self.environment_view = EnvironmentView(environment)
         self.scatter_diagram = ScatterDiagram(environment)
-        self.population_graph = PopulationGraph(environment, [Statistics.number_of_foods, Statistics.number_of_blobs])
-        self.speed_extrema_slider = SpeedExtremeSlider(environment)
-
-        self.control_panel = ControlPanel(environment)
 
         self.app = row(
             column(
                 self.environment_view.get_component(),
-                self.population_graph.get_component()
+                PopulationGraph(environment, [
+                    Statistics.number_of_foods,
+                    Statistics.number_of_blobs
+                ]).get_component()
             ),
             column(
                 self.scatter_diagram.get_component(),
-                self.speed_extrema_slider.get_component(),
-                self.control_panel.get_component()
+                ControlPanel(environment).get_component()
             )
         )
 
