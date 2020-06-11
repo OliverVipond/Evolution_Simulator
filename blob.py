@@ -99,6 +99,9 @@ class Blob:
     def get_mass(self):
         return self.radius * self.radius * Blob.MASS_TO_RADIUS_SQUARED
 
+    def get_energy(self):
+        return self.energy
+
     def get_x_coordinate(self):
         return self.position[0]
 

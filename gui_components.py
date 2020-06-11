@@ -21,7 +21,8 @@ class App:
                 self.environment_view.get_component(),
                 PopulationGraph(environment, [
                     Statistics.number_of_foods,
-                    Statistics.number_of_blobs
+                    Statistics.number_of_blobs,
+                    Statistics.total_mass_of_blobs
                 ]).get_component()
             ),
             column(
