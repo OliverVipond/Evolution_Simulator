@@ -17,7 +17,8 @@ class Environment:
         self.get_data_callbacks = []
 
     def process_food_consumption(self):
-        for food in self.foodage.food_list:
+        food_list = self.foodage.food_list.copy()
+        for food in food_list:
             for organism in self.organisms.find_close_organisms(food.bounding_box):
                 if organism.radius > food.radius and \
                         np.linalg.norm(food.position - organism.position) < organism.radius + food.radius:
