@@ -46,3 +46,6 @@ class Environment:
 
     def add_some_food(self, food_to_add=5):
         self.foodage.add_random_foods(food_to_add)
+
+    def add_some_organisms(self, organisms_to_add=5):
+        self.organisms.add_random_blobs(number_of_new_blobs=organisms_to_add, current_time=self.current_time)

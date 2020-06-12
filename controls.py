@@ -55,6 +55,11 @@ class ActionCentre(Component):
                 callback=environment.add_some_food
             ),
             ActionCentre.make_button(
+                label="Add blobs",
+                button_type="default",
+                callback=environment.add_some_organisms
+            ),
+            ActionCentre.make_button(
                 label="Restart",
                 button_type="danger",
                 callback=environment.restart
