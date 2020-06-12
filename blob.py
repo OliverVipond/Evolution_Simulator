@@ -22,9 +22,11 @@ class Blob:
         "radius": 0.003
     }
 
-    ENERGY_ON_BIRTH = 0.5
-
+    MAXIMUM_ENERGY_DENSITY = 1000
     MASS_TO_RADIUS_SQUARED = 1000
+
+    ENERGY_ON_BIRTH = 0.5
+    ENERGY_NEEDED_FOR_BIRTH = 1
 
     NUMBER_OF_BLOBS = 0
 
@@ -86,6 +88,7 @@ class Blob:
 
     def change_energy(self, delta):
         self.energy += delta
+        self.energy = min(self.energy, Blob.MAXIMUM_ENERGY_DENSITY * self.get_area())
 
     def eat_food(self, food):
         self.energy += food.energy
@@ -99,16 +102,22 @@ class Blob:
 
     def produce_offspring(self, current_time):
         offspring = []
-        while self.energy > 1:
+        while self.energy > Blob.ENERGY_NEEDED_FOR_BIRTH:
             offspring += [self.reproduce(current_time)]
             self.energy -= Blob.ENERGY_ON_BIRTH
         return offspring
+
+    def get_area(self):
+        return math.pi * self.radius ** 2
+
+    def get_energy_density(self):
+        return (self.energy / self.get_area()) / Blob.MAXIMUM_ENERGY_DENSITY
 
     def is_dead(self):
         return not (self.time_of_death is None)
 
     def get_mass(self):
-        return self.radius * self.radius * Blob.MASS_TO_RADIUS_SQUARED
+        return self.radius ** 2 * Blob.MASS_TO_RADIUS_SQUARED
 
     def get_energy(self):
         return self.energy
