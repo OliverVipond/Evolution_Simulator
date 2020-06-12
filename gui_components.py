@@ -77,7 +77,8 @@ class EnvironmentView:
         self.view = Figure(plot_width=600, plot_height=600, x_range=(0, 1), y_range=(0, 1))
         self.view.circle('x', 'y',
                          radius='radius',
-                         alpha='alpha',
+                         fill_alpha='alpha',
+                         line_alpha=0.5,
                          source=self.blobs_data_source,
                          fill_color='green',
                          line_color='black'

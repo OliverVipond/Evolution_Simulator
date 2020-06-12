@@ -24,6 +24,7 @@ class Blob:
 
     MAXIMUM_ENERGY_DENSITY = 1000
     MASS_TO_RADIUS_SQUARED = 1000
+    ENERGY_TO_MASS_PRODUCTION = 1
 
     ENERGY_ON_BIRTH = 0.5
     ENERGY_NEEDED_FOR_BIRTH = 1
@@ -54,18 +55,21 @@ class Blob:
         else:
             self.speed = min(Blob.SPEED_EXTREMA["maximum"], max(speed, Blob.SPEED_EXTREMA["minimum"]))
 
-        if energy is None:
-            self.energy = Blob.ENERGY_ON_BIRTH
-        else:
-            self.energy = energy
-
         if radius is None:
             self.radius = Blob.RADIUS_EXTREMA["minimum"] + \
                           random() * (Blob.RADIUS_EXTREMA["maximum"] - Blob.RADIUS_EXTREMA["minimum"])
         else:
             self.radius = min(Blob.RADIUS_EXTREMA["maximum"], max(radius, Blob.RADIUS_EXTREMA["minimum"]))
 
+        if energy is None:
+            self.energy = Blob.ENERGY_ON_BIRTH
+            self.starting_energy = Blob.ENERGY_ON_BIRTH
+        else:
+            self.energy = energy
+            self.starting_energy = energy
+
         self.bounding_box = self.make_bounding_box()
+        self.next_offspring_data = self.make_next_offspring_data()
 
     def make_bounding_box(self):
         return Rectangle(
@@ -100,11 +104,12 @@ class Blob:
         if self.energy <= 0:
             self.time_of_death = current_time
 
-    def produce_offspring(self, current_time):
+    def produce_offspring(self, current_time: int):
         offspring = []
-        while self.energy > Blob.ENERGY_NEEDED_FOR_BIRTH:
-            offspring += [self.reproduce(current_time)]
-            self.energy -= Blob.ENERGY_ON_BIRTH
+        while self.energy > self.next_offspring_data["energy_requirement"] + self.starting_energy:
+            offspring += [self.make_a_baby(current_time)]
+            self.energy -= self.next_offspring_data["energy_requirement"]
+            self.next_offspring_data = self.make_next_offspring_data()
         return offspring
 
     def get_area(self):
@@ -128,13 +133,28 @@ class Blob:
     def get_y_coordinate(self):
         return self.position[1]
 
-    def reproduce(self, birth_time):
+    def make_next_offspring_data(self):
+        next_radius = self.radius + np.random.normal(0, Blob.MUTATION_PARAMETERS["radius"])
+        next_starting_energy = self.starting_energy
+        return {
+            "speed": self.speed + np.random.normal(0, Blob.MUTATION_PARAMETERS["speed"]),
+            "radius": next_radius,
+            "energy": next_starting_energy,
+            "energy_requirement": Blob.production_energy_requirement(next_starting_energy, next_radius)
+        }
+
+    @staticmethod
+    def production_energy_requirement(offspring_starting_energy, offspring_radius):
+        return offspring_starting_energy + \
+               Blob.ENERGY_TO_MASS_PRODUCTION * Blob.MASS_TO_RADIUS_SQUARED * offspring_radius ** 2
+
+    def make_a_baby(self, birth_time):
         return Blob(
             time_of_birth=birth_time,
-            speed=self.speed + np.random.normal(0, Blob.MUTATION_PARAMETERS["speed"]),
+            speed=self.next_offspring_data["speed"],
             position=self.position.copy(),
-            energy=Blob.ENERGY_ON_BIRTH,
-            radius=self.radius + np.random.normal(0, Blob.MUTATION_PARAMETERS["radius"])
+            energy=self.next_offspring_data["energy"],
+            radius=self.next_offspring_data["radius"]
         )
 
     def restrict_to_extrema(self):
