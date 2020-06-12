@@ -93,14 +93,12 @@ class QuadTree:
             else:
                 i += 1
 
-    def retrieve(self, p_rect, return_objects):
+    def retrieve_close_objects(self, p_rect, close_objects):
         index = self.get_index(p_rect)
         if index != -1:
-            self.nodes[index].retrieve(p_rect, return_objects)
+            self.nodes[index].retrieve_close_objects(p_rect, close_objects)
 
-        return_objects += self.objects
-
-        return return_objects
+        close_objects += self.objects
 
     def __str__(self):
         if self.has_nodes():

@@ -27,7 +27,9 @@ class Organisms:
         self.organism_quad_tree.remove(organism)
 
     def find_close_organisms(self, domain: Rectangle):
-        return self.organism_quad_tree.retrieve(domain, [])
+        close_organisms = []
+        self.organism_quad_tree.retrieve_close_objects(domain, close_organisms)
+        return close_organisms
 
     def update_extrema_of_organisms(self):
         for organism in self.organism_list:
