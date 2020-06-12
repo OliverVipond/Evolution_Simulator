@@ -41,9 +41,6 @@ class Environment:
         for i in range(iterations):
             self.iterate()
 
-    def restart(self):
-        print("TODO: Restart")
-
     def add_some_food(self, food_to_add=5):
         self.foodage.add_random_foods(food_to_add)
 

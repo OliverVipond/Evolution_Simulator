@@ -34,20 +34,26 @@ class ActionCentre(Component):
     def __init__(self, environment: Environment, pause_play_control_functions: PausePlayControlFunctions):
         super().__init__()
 
-        def skip_forward():
-            fast_forward_interval = 300
-            if pause_play_control_functions.is_playing_function():
-                pause_play_control_functions.pause_function()
-                environment.skip_forward(fast_forward_interval)
-                pause_play_control_functions.play_function()
-            else:
-                environment.skip_forward(fast_forward_interval)
+        def skip_forward(fast_forward_interval):
+            def return_function():
+                if pause_play_control_functions.is_playing_function():
+                    pause_play_control_functions.pause_function()
+                    environment.skip_forward(fast_forward_interval)
+                    pause_play_control_functions.play_function()
+                else:
+                    environment.skip_forward(fast_forward_interval)
+            return return_function
 
         self.buttons = column(
             ActionCentre.make_button(
                 label="Skip forward",
                 button_type="default",
-                callback=skip_forward
+                callback=skip_forward(300)
+            ),
+            ActionCentre.make_button(
+                label="Really skip forward",
+                button_type="default",
+                callback=skip_forward(3000)
             ),
             ActionCentre.make_button(
                 label="Add food",
@@ -56,13 +62,8 @@ class ActionCentre(Component):
             ),
             ActionCentre.make_button(
                 label="Add blobs",
-                button_type="default",
+                button_type="primary",
                 callback=environment.add_some_organisms
-            ),
-            ActionCentre.make_button(
-                label="Restart",
-                button_type="danger",
-                callback=environment.restart
             ),
             ActionCentre.make_pause_play_button(pause_play_control_functions)
         )
@@ -80,16 +81,16 @@ class ActionCentre(Component):
 
     @staticmethod
     def make_pause_play_button(pause_play_control_functions: PausePlayControlFunctions):
-        button = Button(label="Pause", button_type="default")
+        button = Button(label="Pause", button_type="warning")
 
         def toggle_pause_play():
             if pause_play_control_functions.is_playing_function():
                 pause_play_control_functions.pause_function()
-                button.button_type = "primary"
+                button.button_type = "success"
                 button.label = "Play"
             else:
                 pause_play_control_functions.play_function()
-                button.button_type = "default"
+                button.button_type = "warning"
                 button.label = "Pause"
 
         button.on_click(lambda _event: toggle_pause_play())
