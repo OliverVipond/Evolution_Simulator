@@ -103,7 +103,7 @@ class EnvironmentView:
             'x': [organism.get_x_coordinate() for organism in self.environment.organisms.organism_list],
             'y': [organism.get_y_coordinate() for organism in self.environment.organisms.organism_list],
             'radius': [organism.radius for organism in self.environment.organisms.organism_list],
-            'alpha': [organism.get_energy_density() for organism in self.environment.organisms.organism_list]
+            'alpha': [organism.get_capacity_for_birth() for organism in self.environment.organisms.organism_list]
         }
 
     def refresh_food_data(self):
