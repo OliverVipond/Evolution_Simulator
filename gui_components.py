@@ -74,6 +74,15 @@ class EnvironmentView:
                                                            )
                                                  )
 
+        self.reachable_org = ColumnDataSource(data=dict(x=[],
+                                                        y=[]
+                                                        )
+                                              )
+        self.tracker = ColumnDataSource(data=dict(x=[],
+                                                  y=[]
+                                                  )
+                                        )
+
         self.view = Figure(plot_width=600, plot_height=600, x_range=(0, 1), y_range=(0, 1))
         self.view.circle('x', 'y',
                          radius='radius',
@@ -89,10 +98,23 @@ class EnvironmentView:
                          fill_color='red',
                          line_color='red'
                          )
+        self.view.circle('x', 'y',
+                         alpha=1, size=4,
+                         source=self.reachable_org,
+                         fill_color='yellow',
+                         line_color='black'
+                         )
+        self.view.circle('x', 'y',
+                         alpha=1, size=4,
+                         source=self.tracker,
+                         fill_color='blue',
+                         line_color='blue'
+                         )
 
     def refresh(self):
         self.refresh_blobs_data()
         self.refresh_food_data()
+        self.refresh_tracker_data()
 
     def get_component(self):
         return self.view
@@ -110,6 +132,19 @@ class EnvironmentView:
             'x': [food.get_x_coordinate() for food in self.environment.foodage.food_list],
             'y': [food.get_y_coordinate() for food in self.environment.foodage.food_list],
             'radius': [food.radius for food in self.environment.foodage.food_list]
+        }
+
+    def refresh_tracker_data(self):
+        tracked_food_item = self.environment.foodage.food_list[0]
+        self.tracker.data = {
+            'x': [tracked_food_item.get_x_coordinate()],
+            'y': [tracked_food_item.get_y_coordinate()],
+        }
+        self.reachable_org.data = {
+            'x': [org.get_x_coordinate() for org in
+                  self.environment.organisms.find_close_organisms(tracked_food_item.bounding_box)],
+            'y': [org.get_y_coordinate() for org in
+                  self.environment.organisms.find_close_organisms(tracked_food_item.bounding_box)],
         }
 
 
