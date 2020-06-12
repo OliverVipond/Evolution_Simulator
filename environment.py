@@ -27,10 +27,8 @@ class Environment:
 
     def iterate(self):
         self.current_time += 1
-        self.organisms.update()
+        self.organisms.update(self.current_time)
         self.process_food_consumption()
-        self.process_births()
-        self.process_deaths()
         for callback in self.get_data_callbacks:
             callback()
         if self.current_time % 50 == 0:
@@ -38,17 +36,6 @@ class Environment:
 
     def add_data_callback(self, callback):
         self.get_data_callbacks += [callback]
-
-    def process_births(self):
-        for organism in self.organisms.organism_list:
-            if organism.energy > 1:
-                self.organisms.add_blob(organism.reproduce(birth_time=self.current_time))
-                organism.change_energy(-0.5)
-
-    def process_deaths(self):
-        for organism in self.organisms.organism_list:
-            if organism.energy < 0:
-                self.organisms.kill_organism(organism)
 
     def skip_forward(self, iterations=100):
         for i in range(iterations):

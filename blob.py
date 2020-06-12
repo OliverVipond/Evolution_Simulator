@@ -31,6 +31,7 @@ class Blob:
     def __init__(self, time_of_birth=0, angle=None, speed=None, position=None, energy=None, radius=None):
 
         self.time_of_birth = time_of_birth
+        self.time_of_death = None
 
         self.id = Blob.NUMBER_OF_BLOBS
         Blob.NUMBER_OF_BLOBS += 1
@@ -62,22 +63,20 @@ class Blob:
         else:
             self.radius = min(Blob.RADIUS_EXTREMA["maximum"], max(radius, Blob.RADIUS_EXTREMA["minimum"]))
 
-        self.bounding_box = Rectangle(
+        self.bounding_box = self.make_bounding_box()
+
+    def make_bounding_box(self):
+        return Rectangle(
             x=self.position[0] - self.radius,
             y=self.position[1] - self.radius,
             width=2 * self.radius,
             height=2 * self.radius
         )
 
-    def update_position(self):
+    def move_one_step(self):
         self.position += self.speed * self.get_velocity()
         self.position -= np.floor(self.position)
-        self.bounding_box = Rectangle(
-            x=self.position[0] - self.radius,
-            y=self.position[1] - self.radius,
-            width=2 * self.radius,
-            height=2 * self.radius
-        )
+        self.bounding_box = self.make_bounding_box()
 
     def get_velocity(self):
         return self.speed * np.array([np.cos(self.angle), np.sin(self.angle)])
@@ -91,10 +90,22 @@ class Blob:
     def eat_food(self, food):
         self.energy += food.energy
 
-    def update(self):
-        self.update_position()
+    def update(self, current_time: int):
+        self.move_one_step()
         self.perturb_angle()
         self.change_energy(-0.5 * self.speed * self.speed * self.get_mass())
+        if self.energy <= 0:
+            self.time_of_death = current_time
+
+    def produce_offspring(self, current_time):
+        offspring = []
+        while self.energy > 1:
+            offspring += [self.reproduce(current_time)]
+            self.energy -= Blob.ENERGY_ON_BIRTH
+        return offspring
+
+    def is_dead(self):
+        return not (self.time_of_death is None)
 
     def get_mass(self):
         return self.radius * self.radius * Blob.MASS_TO_RADIUS_SQUARED
