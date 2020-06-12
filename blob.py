@@ -5,6 +5,9 @@ from quad_tree import Rectangle
 
 
 class Blob:
+
+    MASS_TO_RADIUS_SQUARED = 1000
+    ENERGY_FOR_RADIUS_SQUARED_PRODUCTION = 1
     
     SPEED_EXTREMA = {
         "maximum": 0.05,
@@ -14,17 +17,15 @@ class Blob:
         "maximum": 0.1,
         "minimum": 0.000001
     }
+    DEFAULT_STARTING_ENERGY_PER_RADIUS_SQUARED = 100
 
     ANGLE_PERTURBATION_RATE = 0.1
 
     MUTATION_PARAMETERS = {
         "speed": 0.003,
-        "radius": 0.003
+        "radius": 0.008,
+        "starting_energy": 0.1
     }
-
-    ENERGY_ON_BIRTH = 0.5
-
-    MASS_TO_RADIUS_SQUARED = 1000
 
     NUMBER_OF_BLOBS = 0
 
@@ -52,18 +53,20 @@ class Blob:
         else:
             self.speed = min(Blob.SPEED_EXTREMA["maximum"], max(speed, Blob.SPEED_EXTREMA["minimum"]))
 
-        if energy is None:
-            self.energy = Blob.ENERGY_ON_BIRTH
-        else:
-            self.energy = energy
-
         if radius is None:
             self.radius = Blob.RADIUS_EXTREMA["minimum"] + \
                           random() * (Blob.RADIUS_EXTREMA["maximum"] - Blob.RADIUS_EXTREMA["minimum"])
         else:
             self.radius = min(Blob.RADIUS_EXTREMA["maximum"], max(radius, Blob.RADIUS_EXTREMA["minimum"]))
 
+        if energy is None:
+            self.energy = Blob.DEFAULT_STARTING_ENERGY_PER_RADIUS_SQUARED * self.radius ** 2
+        else:
+            self.energy = energy
+        self.starting_energy = self.energy
+
         self.bounding_box = self.make_bounding_box()
+        self.next_offspring_data = self.make_next_offspring_data()
 
     def make_bounding_box(self):
         return Rectangle(
@@ -97,18 +100,22 @@ class Blob:
         if self.energy <= 0:
             self.time_of_death = current_time
 
-    def produce_offspring(self, current_time):
+    def produce_offspring(self, current_time: int):
         offspring = []
-        while self.energy > 1:
-            offspring += [self.reproduce(current_time)]
-            self.energy -= Blob.ENERGY_ON_BIRTH
+        while self.energy >= self.next_offspring_data["energy_requirement"] + self.starting_energy:
+            offspring += [self.make_the_baby(current_time)]
+            self.energy -= self.next_offspring_data["energy_requirement"]
+            self.next_offspring_data = self.make_next_offspring_data()
         return offspring
+
+    def get_capacity_for_birth(self):
+        return self.energy / (self.next_offspring_data["energy_requirement"] + self.starting_energy)
 
     def is_dead(self):
         return not (self.time_of_death is None)
 
     def get_mass(self):
-        return self.radius * self.radius * Blob.MASS_TO_RADIUS_SQUARED
+        return self.radius ** 2 * Blob.MASS_TO_RADIUS_SQUARED
 
     def get_energy(self):
         return self.energy
@@ -119,13 +126,28 @@ class Blob:
     def get_y_coordinate(self):
         return self.position[1]
 
-    def reproduce(self, birth_time):
+    def make_next_offspring_data(self):
+        next_radius = self.radius + np.random.normal(0, Blob.MUTATION_PARAMETERS["radius"])
+        next_starting_energy = self.starting_energy * np.random.normal(1, Blob.MUTATION_PARAMETERS["starting_energy"])
+        return {
+            "speed": self.speed + np.random.normal(0, Blob.MUTATION_PARAMETERS["speed"]),
+            "radius": next_radius,
+            "energy": next_starting_energy,
+            "energy_requirement": Blob.reproduction_energy_requirement(next_starting_energy, next_radius)
+        }
+
+    @staticmethod
+    def reproduction_energy_requirement(offspring_starting_energy, offspring_radius):
+        return offspring_starting_energy + \
+               Blob.ENERGY_FOR_RADIUS_SQUARED_PRODUCTION * offspring_radius ** 2
+
+    def make_the_baby(self, birth_time):
         return Blob(
             time_of_birth=birth_time,
-            speed=self.speed + np.random.normal(0, Blob.MUTATION_PARAMETERS["speed"]),
+            speed=self.next_offspring_data["speed"],
             position=self.position.copy(),
-            energy=Blob.ENERGY_ON_BIRTH,
-            radius=self.radius + np.random.normal(0, Blob.MUTATION_PARAMETERS["radius"])
+            energy=self.next_offspring_data["energy"],
+            radius=self.next_offspring_data["radius"]
         )
 
     def restrict_to_extrema(self):

@@ -21,8 +21,7 @@ class App:
                 self.environment_view.get_component(),
                 PopulationGraph(environment, [
                     Statistics.number_of_foods,
-                    Statistics.number_of_blobs,
-                    Statistics.total_mass_of_blobs
+                    Statistics.number_of_blobs
                 ]).get_component()
             ),
             column(
@@ -86,7 +85,8 @@ class EnvironmentView:
         self.view = Figure(plot_width=600, plot_height=600, x_range=(0, 1), y_range=(0, 1))
         self.view.circle('x', 'y',
                          radius='radius',
-                         alpha='alpha',
+                         fill_alpha='alpha',
+                         line_alpha=0.5,
                          source=self.blobs_data_source,
                          fill_color='green',
                          line_color='black'
@@ -124,7 +124,7 @@ class EnvironmentView:
             'x': [organism.get_x_coordinate() for organism in self.environment.organisms.organism_list],
             'y': [organism.get_y_coordinate() for organism in self.environment.organisms.organism_list],
             'radius': [organism.radius for organism in self.environment.organisms.organism_list],
-            'alpha': [max(0, min(organism.energy, 1)) for organism in self.environment.organisms.organism_list]
+            'alpha': [organism.get_capacity_for_birth() for organism in self.environment.organisms.organism_list]
         }
 
     def refresh_food_data(self):
