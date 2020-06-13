@@ -58,7 +58,6 @@ class App:
 
 
 class EnvironmentView:
-
     QUAD_TREE_DEBUG_MODE = False
 
     def __init__(self, environment: Environment):
@@ -211,34 +210,34 @@ class ScatterDiagram(Component):
         super().__init__()
         self.environment = environment
 
-        self.data_source = ColumnDataSource(data=dict(x_axis=[],
-                                                      y_axis=[],
-                                                      time_of_birth=[]
-                                                      )
-                                            )
+        self.data_source = ColumnDataSource(data=dict(
+            x_axis=[],
+            y_axis=[],
+            color=[]
+        ))
         self.diagram = Figure(plot_width=400, plot_height=400)
 
-        self.x_axis_menu = Select(title="x axis:", value="radius", options=list(BlobStatistics))
-        self.y_axis_menu = Select(title="y axis:", value="speed", options=list(BlobStatistics))
+        self.x_axis_menu = Select(title="x axis", value="radius", options=list(BlobStatistics))
+        self.y_axis_menu = Select(title="y axis", value="speed", options=list(BlobStatistics))
+        self.color_menu = Select(title="colours", value="time of birth", options=list(BlobStatistics))
 
-        self.color_mapper = LinearColorMapper(palette='Cividis11', low=0, high=1)
+        self.color_mapper = LinearColorMapper(palette='Cividis11')
         self.color_bar = ColorBar(color_mapper=self.color_mapper, location=(0, 0))
         self.diagram.circle('x_axis', 'y_axis',
-                            color={'field': 'time_of_birth', 'transform': self.color_mapper},
+                            color={'field': 'color', 'transform': self.color_mapper},
                             source=self.data_source)
         self.diagram.add_layout(self.color_bar, 'right')
 
-        self.component = column(self.diagram, row(self.x_axis_menu, self.y_axis_menu))
+        self.component = column(self.diagram, row(self.x_axis_menu, self.y_axis_menu, self.color_menu))
 
     def refresh(self):
-        self.color_mapper.high = self.environment.current_time
         self.data_source.data = {
             'x_axis': [BlobStatistics[self.x_axis_menu.value](organism, self.environment)
                        for organism in self.environment.organisms.organism_list],
             'y_axis': [BlobStatistics[self.y_axis_menu.value](organism, self.environment)
                        for organism in self.environment.organisms.organism_list],
-            'time_of_birth': [organism.time_of_birth for organism in
-                              self.environment.organisms.organism_list]
+            'color': [BlobStatistics[self.color_menu.value](organism, self.environment)
+                      for organism in self.environment.organisms.organism_list]
         }
 
 
