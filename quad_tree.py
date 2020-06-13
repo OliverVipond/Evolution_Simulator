@@ -56,7 +56,8 @@ class QuadTree:
         # top_quadrant = (p_rect.y > horizontal_midpoint)
         # TODO These functions should belong to Rectangle
         indices = []
-
+        # Box is | 1 0 |
+        #        | 2 3 |
         if p_rect.x <= vertical_midpoint and p_rect.y <= horizontal_midpoint:
             indices += [2]
         if p_rect.y + p_rect.height >= horizontal_midpoint and p_rect.x <= vertical_midpoint:
@@ -80,10 +81,9 @@ class QuadTree:
             indices = self.get_index(new_object.bounding_box)
             for index in indices:
                 self.nodes[index].insert(new_object)
-                return
-
-        self.objects.append(new_object)
-        self.split_if_needed()
+        else:
+            self.objects.append(new_object)
+            self.split_if_needed()
 
     def has_nodes(self):
         return len(self.nodes) != 0
@@ -96,19 +96,15 @@ class QuadTree:
             self.move_objects_to_nodes()
 
     def move_objects_to_nodes(self):
-        i = 0
-        while i < len(self.objects):
-            indices = self.get_index(self.objects[i].bounding_box)
-            if indices != -1:
-                object_to_insert = self.objects.pop(i)
-                for index in indices:
-                    self.nodes[index].insert(object_to_insert)
-            else:
-                i += 1
+        while len(self.objects) > 0:
+            indices = self.get_index(self.objects[0].bounding_box)
+            for index in indices:
+                self.nodes[index].insert(self.objects[0])
+            self.objects.pop(0)
 
     def retrieve_close_objects(self, p_rect, close_objects):
         indices = self.get_index(p_rect)
-        if indices != -1:
+        if self.has_nodes():
             for index in indices:
                 self.nodes[index].retrieve_close_objects(p_rect, close_objects)
         else:
