@@ -1,5 +1,5 @@
 from environment import Environment
-from math import log
+from math import log, log1p
 
 
 def number_of_foods_function(environment: Environment):
@@ -52,5 +52,5 @@ BlobStatistics = {
     "speed": lambda blob, env: blob.speed,
     "time of birth": lambda blob, env: blob.time_of_birth,
     "log radius": lambda blob, env: log(blob.radius),
-    "log speed": lambda blob, env: log(blob.speed+1)  # adjusted so no division by zero
+    "log speed": lambda blob, env: log1p(blob.speed)  # adjusted so no division by zero
 }
