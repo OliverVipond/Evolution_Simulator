@@ -2,14 +2,7 @@ from environment import Environment
 from bokeh.models import RangeSlider, Slider, Tabs, Panel, Button
 from bokeh.layouts import column
 from blob import Blob
-
-
-class Component:
-    def __init__(self):
-        self.component = None
-
-    def get_component(self):
-        return self.component
+from components import Component
 
 
 class PausePlayControlFunctions:

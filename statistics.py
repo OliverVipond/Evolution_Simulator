@@ -1,4 +1,5 @@
 from environment import Environment
+from math import log
 
 
 def number_of_foods_function(environment: Environment):
@@ -23,8 +24,7 @@ def total_mass_of_blobs(environment: Environment):
     return mass_sum
 
 
-class Statistics:
-
+class EnvironmentStatistics:
     number_of_blobs = {
         'color': 'green',
         'function': number_of_blobs_function
@@ -44,3 +44,13 @@ class Statistics:
         'color': 'blue',
         'function': total_mass_of_blobs
     }
+
+
+BlobStatistics = {
+    "radius": lambda blob, env: blob.radius,
+    "age": lambda blob, env: env.current_time - blob.time_of_birth,
+    "speed": lambda blob, env: blob.speed,
+    "time of birth": lambda blob, env: blob.time_of_birth,
+    "log radius": lambda blob, env: log(blob.radius),
+    "log speed": lambda blob, env: log(blob.speed+1)  # adjusted so no division by zero
+}
