@@ -8,7 +8,7 @@ class Organisms:
         self.organism_quad_tree = QuadTree(Rectangle(0, 0, 1, 1))
 
     def update(self, current_time):
-        self.organism_quad_tree.clear()
+        self.organism_quad_tree = QuadTree(Rectangle(0, 0, 1, 1))
         for blob in self.organism_list:
             blob.update(current_time)
             if blob.is_dead():

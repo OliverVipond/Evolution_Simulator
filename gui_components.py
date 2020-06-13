@@ -1,6 +1,6 @@
 from environment import Environment
 from bokeh.layouts import row, column
-from bokeh.models import ColorBar, LinearColorMapper
+from bokeh.models import ColorBar, LinearColorMapper, WheelZoomTool, Range1d
 from bokeh.plotting import ColumnDataSource, Figure
 from statistics import Statistics
 from controls import ControlPanel, PausePlayControlFunctions
@@ -64,7 +64,13 @@ class EnvironmentView:
         self.blobs_data_source = ColumnDataSource(data=dict(x=[],
                                                             y=[],
                                                             radius=[],
-                                                            alpha=[]
+                                                            alpha=[],
+                                                            left_eye_x=[],
+                                                            right_eye_x=[],
+                                                            left_eye_y=[],
+                                                            right_eye_y=[],
+                                                            eye_radius=[],
+                                                            iris_radius=[]
                                                             )
                                                   )
         self.food_data_source = ColumnDataSource(data=dict(x=[],
@@ -82,13 +88,54 @@ class EnvironmentView:
                                                   )
                                         )
 
-        self.view = Figure(plot_width=600, plot_height=600, x_range=(0, 1), y_range=(0, 1))
+        self.view = Figure(plot_width=600, plot_height=600,
+                           x_range=Range1d(bounds=(0, 1)),
+                           y_range=Range1d(bounds=(0, 1)))
+        self.view.xgrid.grid_line_color = None
+        self.view.ygrid.grid_line_color = None
+        self.view.background_fill_color = "#30b3db"
+        self.view.background_fill_alpha = 0.5
+        self.view.xaxis.major_tick_line_color = None  # turn off x-axis major ticks
+        self.view.xaxis.minor_tick_line_color = None  # turn off x-axis minor ticks
+        self.view.yaxis.major_tick_line_color = None  # turn off y-axis major ticks
+        self.view.yaxis.minor_tick_line_color = None  # turn off y-axis minor ticks
+        self.view.xaxis.major_label_text_font_size = '0pt'  # preferred method for removing tick labels
+        self.view.yaxis.major_label_text_font_size = '0pt'  # preferred method for removing tick labels
+        self.view.add_tools(WheelZoomTool())
         self.view.circle('x', 'y',
                          radius='radius',
                          fill_alpha='alpha',
                          line_alpha=0.5,
                          source=self.blobs_data_source,
                          fill_color='green',
+                         line_color='black'
+                         )
+        self.view.circle('left_eye_x', 'left_eye_y',
+                         radius='eye_radius',
+                         source=self.blobs_data_source,
+                         alpha='alpha',
+                         fill_color='white',
+                         line_color='black'
+                         )
+        self.view.circle('right_eye_x', 'right_eye_y',
+                         radius='eye_radius',
+                         source=self.blobs_data_source,
+                         alpha='alpha',
+                         fill_color='white',
+                         line_color='black'
+                         )
+        self.view.circle('left_eye_x', 'left_eye_y',
+                         radius='iris_radius',
+                         source=self.blobs_data_source,
+                         alpha='alpha',
+                         fill_color='black',
+                         line_color='black'
+                         )
+        self.view.circle('right_eye_x', 'right_eye_y',
+                         radius='iris_radius',
+                         source=self.blobs_data_source,
+                         alpha='alpha',
+                         fill_color='black',
                          line_color='black'
                          )
         self.view.circle('x', 'y',
@@ -124,7 +171,13 @@ class EnvironmentView:
             'x': [organism.get_x_coordinate() for organism in self.environment.organisms.organism_list],
             'y': [organism.get_y_coordinate() for organism in self.environment.organisms.organism_list],
             'radius': [organism.radius for organism in self.environment.organisms.organism_list],
-            'alpha': [organism.get_capacity_for_birth() for organism in self.environment.organisms.organism_list]
+            'alpha': [organism.get_capacity_for_birth() for organism in self.environment.organisms.organism_list],
+            'left_eye_x': [organism.left_eye_position()[0] for organism in self.environment.organisms.organism_list],
+            'right_eye_x': [organism.right_eye_position()[0] for organism in self.environment.organisms.organism_list],
+            'left_eye_y': [organism.left_eye_position()[1] for organism in self.environment.organisms.organism_list],
+            'right_eye_y': [organism.right_eye_position()[1] for organism in self.environment.organisms.organism_list],
+            'eye_radius': [organism.radius / 5 for organism in self.environment.organisms.organism_list],
+            'iris_radius': [organism.radius / 15 for organism in self.environment.organisms.organism_list]
         }
 
     def refresh_food_data(self):

@@ -13,10 +13,10 @@ class Foodage:
     def add_food(self, food):
         self.food_list += [food]
 
-    def add_random_foods(self, number_of_new_foods=1):
+    def add_random_foods(self, number_of_new_foods=10):
         for i in range(number_of_new_foods):
             calories = random()
-            self.add_food(Food(energy=calories * calories, radius=calories / 50))
+            self.add_food(Food(energy=calories * calories, radius=calories / 300))
 
     def delete_food(self, food):
         self.food_list.remove(food)

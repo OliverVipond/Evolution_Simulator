@@ -10,16 +10,16 @@ class Blob:
     ENERGY_FOR_RADIUS_SQUARED_PRODUCTION = 1
     
     SPEED_EXTREMA = {
-        "maximum": 0.05,
-        "minimum": 0.000001
+        "maximum": 0.08,
+        "minimum": 0.0001
     }
     RADIUS_EXTREMA = {
-        "maximum": 0.1,
-        "minimum": 0.000001
+        "maximum": 0.03,
+        "minimum": 0.001
     }
     DEFAULT_STARTING_ENERGY_PER_RADIUS_SQUARED = 100
 
-    ANGLE_PERTURBATION_RATE = 0.1
+    ANGLE_PERTURBATION_RATE = 1
 
     MUTATION_PARAMETERS = {
         "speed": 0.003,
@@ -36,7 +36,7 @@ class Blob:
 
         self.id = Blob.NUMBER_OF_BLOBS
         Blob.NUMBER_OF_BLOBS += 1
-
+        self.eye_width = 0.5*random() + 0.3
         if position is None:
             self.position = np.array(np.random.rand(2))
         else:
@@ -85,7 +85,7 @@ class Blob:
         return self.speed * np.array([np.cos(self.angle), np.sin(self.angle)])
 
     def perturb_angle(self):
-        self.angle += np.random.normal(0, Blob.ANGLE_PERTURBATION_RATE)
+        self.angle += np.random.normal(0, Blob.ANGLE_PERTURBATION_RATE) * self.speed
 
     def change_energy(self, delta):
         self.energy += delta
@@ -156,6 +156,12 @@ class Blob:
 
     def __str__(self):
         return "<Blob #" + str(self.id) + ">"
+
+    def left_eye_position(self):
+        return self.position + self.radius/2 * np.array([np.cos(self.angle + self.eye_width), np.sin(self.angle + self.eye_width)])
+
+    def right_eye_position(self):
+        return self.position + self.radius/2 * np.array([np.cos(self.angle - self.eye_width), np.sin(self.angle - self.eye_width)])
 
     @staticmethod
     def change_speed_extrema(minimum, maximum):
