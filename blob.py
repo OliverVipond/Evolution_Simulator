@@ -162,11 +162,3 @@ class Blob:
 
     def right_eye_position(self):
         return self.position + self.radius/2 * np.array([np.cos(self.angle - self.eye_width), np.sin(self.angle - self.eye_width)])
-
-    @staticmethod
-    def change_speed_extrema(minimum, maximum):
-        if maximum >= minimum >= 0:
-            Blob.SPEED_EXTREMA["maximum"] = maximum
-            Blob.SPEED_EXTREMA["minimum"] = minimum
-        else:
-            raise Exception("Maximum speed smaller than minimum speed")

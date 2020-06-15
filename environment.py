@@ -4,7 +4,10 @@ import numpy as np
 
 
 class Environment:
-
+    FOOD_PARAMETERS = {
+        'time' : 50,
+        'number_of_new_foods': 10
+    }
     def __init__(self, number_of_blobs=0, starting_food_items=0):
         self.current_time = 0
 
@@ -32,8 +35,8 @@ class Environment:
         self.process_food_consumption()
         for callback in self.get_data_callbacks:
             callback()
-        if self.current_time % 50 == 0:
-            self.add_some_food(1)
+        if self.current_time % Environment.FOOD_PARAMETERS['time'] == 0:
+            self.add_some_food(Environment.FOOD_PARAMETERS['number_of_new_foods'])
 
     def add_data_callback(self, callback):
         self.get_data_callbacks += [callback]
