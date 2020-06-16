@@ -22,8 +22,8 @@ class Blob:
     ANGLE_PERTURBATION_RATE = 1
 
     MUTATION_PARAMETERS = {
-        "speed": 0.003,
-        "radius": 0.008,
+        "speed": 0.1,
+        "radius": 0.1,
         "starting_energy": 0.1
     }
 
@@ -127,10 +127,14 @@ class Blob:
         return self.position[1]
 
     def make_next_offspring_data(self):
-        next_radius = self.radius + np.random.normal(0, Blob.MUTATION_PARAMETERS["radius"])
-        next_starting_energy = self.starting_energy * np.random.normal(1, Blob.MUTATION_PARAMETERS["starting_energy"])
+        next_radius = max(
+            np.random.normal(self.radius, Blob.MUTATION_PARAMETERS["radius"]*self.radius)
+            , Blob.RADIUS_EXTREMA['minimum']
+                        )
+        next_starting_energy = max(np.random.normal(self.starting_energy,
+                                                Blob.MUTATION_PARAMETERS["starting_energy"]*self.starting_energy),0)
         return {
-            "speed": self.speed + np.random.normal(0, Blob.MUTATION_PARAMETERS["speed"]),
+            "speed": np.random.normal(self.speed, Blob.MUTATION_PARAMETERS["speed"]*self.speed),
             "radius": next_radius,
             "energy": next_starting_energy,
             "energy_requirement": Blob.reproduction_energy_requirement(next_starting_energy, next_radius)

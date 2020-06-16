@@ -117,16 +117,16 @@ class BlobControls(Component):
                 parameters=Blob.MUTATION_PARAMETERS,
                 key="speed",
                 min_value=0,
-                max_value=0.01,
-                step=0.0001,
+                max_value=0.5,
+                step=0.005,
                 label="Speed mutation"
             ),
             BlobControls.make_parameter_slider(
                 parameters=Blob.MUTATION_PARAMETERS,
                 key="radius",
                 min_value=0,
-                max_value=0.03,
-                step=0.0001,
+                max_value=0.5,
+                step=0.005,
                 label="Radius mutation"
             ),
             BlobControls.make_button(
@@ -203,7 +203,7 @@ class FoodControls(Component):
             FoodControls.make_parameter_slider(
                 parameters=environment.FOOD_PARAMETERS,
                 key="time",
-                min_value=0,
+                min_value=10,
                 max_value=1000,
                 step=10,
                 label="Time Steps per Feed"
